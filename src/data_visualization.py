@@ -14,7 +14,7 @@ def visualize_country(country_name):
         )
     )
 
-    fig, axs = plt.subplots(2, 1, figsize=(8, 10))
+    _, axs = plt.subplots(2, 1, figsize=(8, 10))
     if item_type == 0:
         for item in df["item"].unique():
             item_data = df[df["item"] == item]
@@ -35,6 +35,7 @@ def visualize_country(country_name):
             label=energy_array[item_type - 1],
         )
     else:
+        print("Out of index")
         return
 
     axs[0].set_title("Values by Item Line Plot")

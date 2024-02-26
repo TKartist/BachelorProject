@@ -12,7 +12,7 @@ def clean_filename(filename):
     return filename
 
 
-def extract_country(filename):
+def extract_country_name(filename):
     return filename[filename.find("_") + 1 : filename.find(".")]
 
 
@@ -26,7 +26,7 @@ def get_country_data(filename):
     try:
         filename = clean_filename(filename)
         df = pd.read_csv("../data/" + filename)
-        country = extract_country(filename)
+        country = extract_country_name(filename)
         df["country"] = country
         return df
     except Exception as e:
