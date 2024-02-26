@@ -12,13 +12,13 @@ def clean_filename(filename):
     return filename
 
 
+def extract_country(filename):
+    return filename[filename.find("_") + 1 : filename.find(".")]
+
+
 def get_filenames():
     filenames = os.listdir("../data")
     return filenames
-
-
-def extract_country(filename):
-    return filename[filename.find("_") + 1 : filename.find(".")]
 
 
 def get_country_data(filename):
@@ -46,8 +46,3 @@ def concat_all_df(df_arr):
     for df in df_arr:
         concated_df = pd.concat([concated_df, df])
     return concated_df
-
-
-print(concat_all_df(get_all_data()))
-# x["country"] = "Austria"
-# print(x)
