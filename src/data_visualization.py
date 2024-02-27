@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def visualize_country(country_name):
+def visualize_country(country_name, info_type):
     df = dr.get_country_data(country_name)
     energy_array = df["item"].unique()
 
@@ -20,13 +20,13 @@ def visualize_country(country_name):
             item_data = df[df["item"] == item]
             axs[0].plot(
                 item_data.year.astype(str) + "." + item_data.month.astype(str),
-                item_data["value"],
+                item_data[info_type],
                 marker="o",
                 label=item,
             )
             axs[1].scatter(
                 item_data.year.astype(str) + "." + item_data.month.astype(str),
-                item_data["value"],
+                item_data[info_type],
                 marker="o",
                 label=item,
             )
@@ -34,13 +34,13 @@ def visualize_country(country_name):
         item_data = df[df["item"] == energy_array[item_type - 1]]
         axs[0].plot(
             item_data.year.astype(str) + "." + item_data.month.astype(str),
-            item_data["value"],
+            item_data[info_type],
             marker="o",
             label=energy_array[item_type - 1],
         )
         axs[1].scatter(
             item_data.year.astype(str) + "." + item_data.month.astype(str),
-            item_data["value"],
+            item_data[info_type],
             marker="o",
             label=energy_array[item_type - 1],
         )
@@ -49,13 +49,13 @@ def visualize_country(country_name):
         return
     ticks = item_data.year.astype(str) + ".1"
     axs[0].set_title("Values by Item Line Plot")
-    axs[0].set_xlabel("Index")
+    axs[0].set_xlabel("Time")
     axs[0].set_ylabel("Values")
     axs[0].legend()
     axs[0].grid(True, linestyle="--", alpha=0.7)
     axs[0].set_xticks(ticks)
     axs[1].set_title("Values by Item Scatter Plot")
-    axs[1].set_xlabel("Index")
+    axs[1].set_xlabel("Time")
     axs[1].set_ylabel("Values")
     axs[1].legend()
     axs[1].grid(True, linestyle="--", alpha=0.7)
@@ -64,9 +64,4 @@ def visualize_country(country_name):
 
 
 country_name = input("Enter the country name: ")
-visualize_country(country_name=country_name)
-
-# for i in range(len(item_data)):
-#     time_arr.append(
-#         str(item_data.iloc[i]["year"])[2:4] + "." + str(item_data.iloc[i]["month"])
-#     )
+visualize_country(country_name=country_name, info_type="value")
