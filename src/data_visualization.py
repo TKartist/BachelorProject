@@ -48,13 +48,13 @@ def visualize_country(country_name, info_type):
         print("Out of index")
         return
     ticks = item_data.year.astype(str) + ".1"
-    axs[0].set_title("Values by Item Line Plot")
+    axs[0].set_title("Values by Item Line Plot " + country_name)
     axs[0].set_xlabel("Time")
     axs[0].set_ylabel("Values")
     axs[0].legend()
     axs[0].grid(True, linestyle="--", alpha=0.7)
     axs[0].set_xticks(ticks)
-    axs[1].set_title("Values by Item Scatter Plot")
+    axs[1].set_title("Values by Item Scatter Plot " + country_name)
     axs[1].set_xlabel("Time")
     axs[1].set_ylabel("Values")
     axs[1].legend()
