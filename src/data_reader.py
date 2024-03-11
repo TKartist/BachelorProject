@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 
 
@@ -36,8 +37,8 @@ def organize_table(filename):
         temp_df = df[df["item"] == energy]
         temp_df = temp_df.set_index("date")
         new_df[energy] = temp_df["value"]
-    print(new_df)
-    return df
+    return new_df
 
 
-organize_table("data_Austria.csv")
+df = organize_table("Switzerland")
+print(df.columns[0])
