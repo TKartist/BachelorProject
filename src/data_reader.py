@@ -21,28 +21,23 @@ def get_filenames():
     return filenames
 
 
-def get_country_data(filename):
-    original = filename
+def organize_table(filename):
+    filename = clean_filename(filename)
     try:
-        filename = clean_filename(filename)
         df = pd.read_csv("../data/" + filename)
-        country = extract_country_name(filename)
-        df["country"] = country
-        return df
     except Exception as e:
-        print("Please enter a correct filename, there is no data on " + original)
+        print("Please enter a correct filename")
+    df["date"] = pd.to_datetime({"year": df["year"], "month": df["month"], "day": 1})
+    energy_types = df["item"].unique()
+    new_df = pd.DataFrame()
+    new_df["date"] = df["date"].unique()
+    new_df = new_df.set_index("date")
+    for energy in energy_types:
+        temp_df = df[df["item"] == energy]
+        temp_df = temp_df.set_index("date")
+        new_df[energy] = temp_df["value"]
+    print(new_df)
+    return df
 
 
-def get_all_data():
-    fnames = get_filenames()
-    df_arr = []
-    for fname in fnames:
-        df_arr.append(get_country_data(fname))
-    return df_arr
-
-
-def concat_all_df(df_arr):
-    concated_df = pd.DataFrame()
-    for df in df_arr:
-        concated_df = pd.concat([concated_df, df])
-    return concated_df
+organize_table("data_Austria.csv")

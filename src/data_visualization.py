@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def visualize_country(country_name, info_type):
+def visualize_country(country_name):
     df = dr.get_country_data(country_name)
     energy_array = df["item"].unique()
 
@@ -20,13 +20,13 @@ def visualize_country(country_name, info_type):
             item_data = df[df["item"] == item]
             axs[0].plot(
                 item_data.year.astype(str) + "." + item_data.month.astype(str),
-                item_data[info_type],
+                item_data["value"],
                 marker="o",
                 label=item,
             )
             axs[1].scatter(
                 item_data.year.astype(str) + "." + item_data.month.astype(str),
-                item_data[info_type],
+                item_data["value"],
                 marker="o",
                 label=item,
             )
@@ -34,13 +34,13 @@ def visualize_country(country_name, info_type):
         item_data = df[df["item"] == energy_array[item_type - 1]]
         axs[0].plot(
             item_data.year.astype(str) + "." + item_data.month.astype(str),
-            item_data[info_type],
+            item_data["value"],
             marker="o",
             label=energy_array[item_type - 1],
         )
         axs[1].scatter(
             item_data.year.astype(str) + "." + item_data.month.astype(str),
-            item_data[info_type],
+            item_data["value"],
             marker="o",
             label=energy_array[item_type - 1],
         )
@@ -64,4 +64,4 @@ def visualize_country(country_name, info_type):
 
 
 country_name = input("Enter the country name: ")
-visualize_country(country_name=country_name, info_type="value")
+visualize_country(country_name=country_name)
