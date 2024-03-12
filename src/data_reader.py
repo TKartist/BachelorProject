@@ -38,7 +38,3 @@ def organize_table(filename):
         temp_df = temp_df.set_index("date")
         new_df[energy] = temp_df["value"]
     return new_df
-
-
-df = organize_table("Switzerland")
-print(df.columns[0])
