@@ -11,7 +11,6 @@ from auxiliary import adf_test
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 
-
 def view_trend_seasonality(series):
     results = seasonal_decompose(series)
     results.plot()
@@ -20,9 +19,9 @@ def view_trend_seasonality(series):
 
 def arima_order(series, test_size):
     arima = auto_arima(
-        series, start_p=0, start_q=0, max_p=10, max_q=10, seasonal=True, trace=True
+        series, start_p=0, start_q=0, max_p=10, max_q=10, seasonal=False, trace=True
     )
-    order = arima.order
+    order = (2, 0, 2)
 
     # train and test set split (assuming we try to predic half a year)
     bound = len(series) - test_size
@@ -42,10 +41,23 @@ def arima_order(series, test_size):
     preds.plot(legend=True)
     plt.show()
 
+
 def sarimax_prediction(series, test_size):
+    arima = auto_arima(
+        series,
+        start_p=0,
+        start_q=0,
+        max_p=10,
+        max_q=10,
+        seasonal=True,
+        m=12,
+        trace=True,
+    )
+    print(arima.summary())
 
 
-df = dr.organize_table("Belgium")
+df = dr.organize_table("Germany")
 # view_trend_seasonality(df["demand"])
-arima_order(df["demand"], 12)
+# arima_order(df["demand"], 12)
+sarimax_prediction(df["demand"], 12)
 # print(df["demand"])
