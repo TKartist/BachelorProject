@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from statsmodels.tsa.stattools import adfuller
 import warnings
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 warnings.filterwarnings("ignore")
 
@@ -29,3 +30,12 @@ def adf_test(series, title=""):
         print("Fail to reject the Null Hypothesis")
         print("Data has a unit root and is non-stationary")
         return False
+
+
+def performance_analysis(data, predictions):
+    MAE = mean_absolute_error(data, predictions)
+    MSE = mean_squared_error(data, predictions)
+    RMSE = np.sqrt(MSE)
+    data_mean = data.mean()
+    result = {"MAE": MAE, "MSE": MSE, "RMSE": RMSE, "MEAN": data_mean}
+    return result

@@ -8,7 +8,7 @@ from pmdarima.arima import auto_arima
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.seasonal import seasonal_decompose
-from auxiliary import adf_test
+from auxiliary import adf_test, performance_analysis
 
 
 def view_trend_seasonality(series):
@@ -62,7 +62,7 @@ def arima_order(series, test_size):
     train = series[:-test_size]
     test = series[-test_size:]
 
-    model = grid_search(series, arima.order)
+    model = grid_search(series, (3, 0, 1))
     results = model.fit()
 
     start = len(train)
@@ -70,7 +70,9 @@ def arima_order(series, test_size):
     preds = results.predict(start=start, end=end, typ="levels").rename(
         "ARIMA predictions"
     )
-
+    print(train)
+    print(preds)
+    print(test)
     series.plot(legend=True, figsize=(16, 10))
     preds.plot(legend=True)
     plt.show()
@@ -95,7 +97,7 @@ def sarima_prediction(series, test_size):
     test = series[-test_size:]
 
     start = len(train)
-    end = start + len(test)
+    end = start + len(test) - 1
 
     model = SARIMAX(
         train, order=order, seasonal_order=seasonal_order, enforce_invertibility=False
@@ -109,8 +111,8 @@ def sarima_prediction(series, test_size):
     plt.show()
 
 
-df = dr.organize_table("Germany")
+df = dr.organize_table("France")
 # view_trend_seasonality(df["demand"])
-arima_order(df["demand"], 12)
-# sarima_prediction(df["demand"], 12)
+arima_order(df["hydro_nops"], 12)
+# sarima_prediction(df["Wind"], 12)
 # print(df["demand"])
