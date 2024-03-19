@@ -13,6 +13,7 @@ from auxiliary import adf_test, performance_analysis
 
 def view_trend_seasonality(series):
     results = seasonal_decompose(series)
+    print(results.seasonal)
     results.plot()
     plt.show()
 
@@ -106,13 +107,22 @@ def sarima_prediction(series, test_size):
     predictions = results.predict(start, end, typ="levels").rename(
         "SARIMA PREDICTION " + str(order) + "X" + str(seasonal_order)
     )
-    series.plot(legend=True, figsize=(16, 10))
+    test.plot(legend=True, figsize=(16, 10))
     predictions.plot(legend=True)
     plt.show()
+    return (predictions, test)
 
 
 df = dr.organize_table("France")
-# view_trend_seasonality(df["demand"])
-arima_order(df["hydro_nops"], 12)
-# sarima_prediction(df["Wind"], 12)
+# view_trend_seasonality(df["hydro_nops"])
+# arima_order(df["hydro_nops"], 6)
+(a, b) = sarima_prediction(df["hydro_nops"], 3)
+analysis = performance_analysis(b, a)
+print(analysis)
+
+
+def progressive_prediction():
+    print("k")
+
+
 # print(df["demand"])
