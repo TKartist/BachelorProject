@@ -37,5 +37,4 @@ def performance_analysis(data, predictions):
     MSE = mean_squared_error(data, predictions)
     RMSE = np.sqrt(MSE)
     data_mean = data.mean()
-    result = {"MAE": MAE, "MSE": MSE, "RMSE": RMSE, "MEAN": data_mean}
-    return result
+    return (MAE, MSE, RMSE, data_mean)

@@ -89,7 +89,6 @@ def sarima_prediction(series, test_size):
         max_q=10,
         seasonal=True,
         m=12,
-        trace=True,
     )
     order = sarima.order
     seasonal_order = sarima.seasonal_order
@@ -107,22 +106,49 @@ def sarima_prediction(series, test_size):
     predictions = results.predict(start, end, typ="levels").rename(
         "SARIMA PREDICTION " + str(order) + "X" + str(seasonal_order)
     )
-    test.plot(legend=True, figsize=(16, 10))
-    predictions.plot(legend=True)
-    plt.show()
-    return (predictions, test)
+    # test.plot(legend=True, figsize=(16, 10))
+    # predictions.plot(legend=True)
+    # plt.show()
+    return (test, predictions)
 
 
-df = dr.organize_table("France")
+# df = dr.organize_table("France")
 # view_trend_seasonality(df["hydro_nops"])
 # arima_order(df["hydro_nops"], 6)
-(a, b) = sarima_prediction(df["hydro_nops"], 3)
-analysis = performance_analysis(b, a)
-print(analysis)
+# (a, b) = sarima_prediction(df["hydro_nops"], 3)
+# analysis = performance_analysis(b, a)
+# print(analysis)
 
 
 def progressive_prediction():
-    print("k")
+    df = dr.organize_table("France")
+    start = int(len(df) * 0.6) + 1
+    prediction_size = 3
+    arr_mae = []
+    arr_mse = []
+    arr_rmse = []
+    arr_dm = []
+    predictions = []
+    originals = []
+    for i in range(start, len(df) + 1):
+        (a, b) = sarima_prediction(df["hydro_nops"][:i], prediction_size)
+        (MAE, MSE, RMSE, data_mean) = performance_analysis(a, b)
+        predictions.append(b)
+        originals.append(a)
+        arr_mae.append(MAE)
+        arr_dm.append(data_mean)
+        arr_mse.append(MSE)
+        arr_rmse.append(RMSE)
+    out = pd.DataFrame(arr_mae, columns=["MAE"])
+    out["MSE"] = arr_mse
+    out["RMSE"] = arr_rmse
+    out["Mean"] = arr_dm
+    out["Data"] = originals
+    out["Forecast"] = predictions
+    print(out)
+    return out
 
 
+progressive_prediction()
+# progressive_prediction()
 # print(df["demand"])
