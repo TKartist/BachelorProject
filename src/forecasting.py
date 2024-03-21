@@ -9,6 +9,7 @@ from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.seasonal import seasonal_decompose
 from auxiliary import adf_test, performance_analysis
+from data_visualization import visualize_error
 
 
 def view_trend_seasonality(series):
@@ -166,6 +167,8 @@ def generate_csv(series, country, energy):
 
 country = "France"
 energy = "hydro_nops"
-generate_csv(progressive_prediction(country, energy), country, energy)
+# generate_csv(progressive_prediction(country, energy), country, energy)
+df = pd.read_csv("../data/prediction_Francehydro_nops", index_col="period")
+visualize_error(df, "RMSE")
 # progressive_prediction()
 # print(df["demand"])

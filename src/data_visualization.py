@@ -27,4 +27,8 @@ def visualize_country(country_name):
     plt.show()
 
 
-visualize_country("Switzerland")
+def visualize_error(series, type):
+    series[[type, "Mean"]].plot.bar(legend=True, figsize=(12, 8))
+    plt.xlabel("date")
+    plt.ylabel(type + " against mean")
+    plt.show()
