@@ -120,9 +120,13 @@ def sarima_prediction(series, test_size):
 # print(analysis)
 
 
-def progressive_prediction():
-    df = dr.organize_table("France")
-    start = int(len(df) * 0.6) + 1
+def series2tuple(series):
+    return (series[0], series[1], series[2])
+
+
+def progressive_prediction(country, energy):
+    df = dr.organize_table(country)
+    start = int(len(df) * 0.9) + 1
     prediction_size = 3
     arr_mae = []
     arr_mse = []
@@ -130,25 +134,38 @@ def progressive_prediction():
     arr_dm = []
     predictions = []
     originals = []
+    period = []
     for i in range(start, len(df) + 1):
-        (a, b) = sarima_prediction(df["hydro_nops"][:i], prediction_size)
+        (a, b) = sarima_prediction(df[energy][:i], prediction_size)
         (MAE, MSE, RMSE, data_mean) = performance_analysis(a, b)
-        predictions.append(b)
-        originals.append(a)
+        predictions.append(series2tuple(b))
+        originals.append(series2tuple(a))
         arr_mae.append(MAE)
         arr_dm.append(data_mean)
         arr_mse.append(MSE)
         arr_rmse.append(RMSE)
+        period.append(a.index[0])
     out = pd.DataFrame(arr_mae, columns=["MAE"])
     out["MSE"] = arr_mse
     out["RMSE"] = arr_rmse
     out["Mean"] = arr_dm
     out["Data"] = originals
     out["Forecast"] = predictions
-    print(out)
+    out["period"] = period
+    out.set_index("period", inplace=True)
+    print(out.index)
     return out
 
 
-progressive_prediction()
+def generate_csv(series, country, energy):
+    series.to_csv(
+        "../data/prediction_" + country + energy,
+        encoding="utf-8",
+    )
+
+
+country = "France"
+energy = "hydro_nops"
+generate_csv(progressive_prediction(country, energy), country, energy)
 # progressive_prediction()
 # print(df["demand"])
