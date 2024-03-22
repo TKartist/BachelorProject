@@ -2,13 +2,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import data_reader as dr
-import itertools
 
 from pmdarima.arima import auto_arima
-from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.seasonal import seasonal_decompose
-from auxiliary import adf_test, performance_analysis
+from auxiliary import adf_test, performance_analysis, grid_search
 from data_visualization import visualize_error
 
 
@@ -17,34 +15,6 @@ def view_trend_seasonality(series):
     print(results.seasonal)
     results.plot()
     plt.show()
-
-
-# there are obscure cases of auto_arima where the minimum AIC is present after an inverted bell curve
-# hence, in this case, we perform a grid search just in case.
-# This function will be alter the order, if it wasn't intercepted by auto_arima function as it should
-# i.e. (p, d, q) == (0,0,0)
-def grid_search(series, order):
-    if order[0] > 0 or order[2] > 0:
-        # perform grid_search
-        model = ARIMA(series, order=order)
-        return model
-    p = range(1, 7)
-    q = range(1, 7)
-    best_aic = np.inf
-    best_model = None
-    pdq = list(itertools.product(p, order, q))
-    for param in pdq:
-        try:
-            model = ARIMA(series, order=param)
-            results = model.fit()
-            aic = results.aic
-
-            if results.mle_retvals["converged"] and aic < best_aic:
-                best_model = model
-                best_aic = aic
-        except:
-            continue
-    return best_model
 
 
 def arima_order(series, test_size):
@@ -69,15 +39,10 @@ def arima_order(series, test_size):
 
     start = len(train)
     end = len(train) + len(test) - 1
-    preds = results.predict(start=start, end=end, typ="levels").rename(
+    predictions = results.predict(start=start, end=end, typ="levels").rename(
         "ARIMA predictions"
     )
-    print(train)
-    print(preds)
-    print(test)
-    series.plot(legend=True, figsize=(16, 10))
-    preds.plot(legend=True)
-    plt.show()
+    return (test, predictions)
 
 
 # Seasonal AutoRegressive Integrated Moving Average Model
@@ -107,18 +72,7 @@ def sarima_prediction(series, test_size):
     predictions = results.predict(start, end, typ="levels").rename(
         "SARIMA PREDICTION " + str(order) + "X" + str(seasonal_order)
     )
-    # test.plot(legend=True, figsize=(16, 10))
-    # predictions.plot(legend=True)
-    # plt.show()
     return (test, predictions)
-
-
-# df = dr.organize_table("France")
-# view_trend_seasonality(df["hydro_nops"])
-# arima_order(df["hydro_nops"], 6)
-# (a, b) = sarima_prediction(df["hydro_nops"], 3)
-# analysis = performance_analysis(b, a)
-# print(analysis)
 
 
 def series2tuple(series):
@@ -160,7 +114,7 @@ def progressive_prediction(country, energy):
 
 def generate_csv(series, country, energy):
     series.to_csv(
-        "../data/prediction_" + country + energy,
+        "../results/prediction_" + country + "_" + energy,
         encoding="utf-8",
     )
 
@@ -168,7 +122,7 @@ def generate_csv(series, country, energy):
 country = "France"
 energy = "hydro_nops"
 # generate_csv(progressive_prediction(country, energy), country, energy)
-df = pd.read_csv("../data/prediction_Francehydro_nops", index_col="period")
-visualize_error(df, "RMSE")
+df = pd.read_csv("../results/prediction_Francehydro_nops", index_col="period")
+visualize_error(df, "RMSE", country, energy)
 # progressive_prediction()
 # print(df["demand"])

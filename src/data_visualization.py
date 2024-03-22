@@ -27,8 +27,18 @@ def visualize_country(country_name):
     plt.show()
 
 
-def visualize_error(series, type):
+def visualize_error(series, type, country, energy):
     series[[type, "Mean"]].plot.bar(legend=True, figsize=(12, 8))
     plt.xlabel("date")
     plt.ylabel(type + " against mean")
+    plt.title(country + " " + energy + " forecasting RMSE vs Data Mean")
+    plt.show()
+
+
+def visualize_prediction(prediction, data, title):
+    prediction.plot(legend=True, figsize=(16, 10))
+    data.plot(legend=True)
+    plt.title(title)
+    plt.xlabel("Date")
+    plt.ylabel("Consumption")
     plt.show()
