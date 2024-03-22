@@ -122,7 +122,7 @@ def generate_csv(series, country, energy):
 country = "France"
 energy = "hydro_nops"
 # generate_csv(progressive_prediction(country, energy), country, energy)
-df = pd.read_csv("../results/prediction_Francehydro_nops", index_col="period")
+df = pd.read_csv("../results/prediction_France_hydro_nops", index_col="period")
 visualize_error(df, "RMSE", country, energy)
 # progressive_prediction()
 # print(df["demand"])
