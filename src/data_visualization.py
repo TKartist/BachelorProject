@@ -3,14 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def visualize_country(country_name):
-    df = dr.organize_table(country_name)
-    print(df.columns)
-    col_index = int(
-        input(
-            "Select the index of the energy source you want to view. \n index starts from 1, choose 0 if want to view all: "
-        )
-    )
+def visualize_country(df, col_index, country_name):
     # _, axs = plt.subplots(2, 1, figsize=(16, 10))
     if col_index == 0:
         df.plot(

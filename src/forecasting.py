@@ -17,7 +17,7 @@ def view_trend_seasonality(series):
     plt.show()
 
 
-def arima_order(series, test_size):
+def arima_prediction(series, test_size):
     arima = auto_arima(
         series,
         start_p=0,
@@ -79,8 +79,7 @@ def series2tuple(series):
     return (series[0], series[1], series[2])
 
 
-def progressive_prediction(country, energy):
-    df = dr.organize_table(country)
+def progressive_prediction(df, energy):
     start = int(len(df) * 0.9) + 1
     prediction_size = 3
     arr_mae = []
@@ -119,10 +118,9 @@ def generate_csv(series, country, energy):
     )
 
 
-country = "France"
-energy = "hydro_nops"
+# country = "France"
+# energy = "hydro_nops"
 # generate_csv(progressive_prediction(country, energy), country, energy)
-df = pd.read_csv("../results/prediction_France_hydro_nops", index_col="period")
-visualize_error(df, "RMSE", country, energy)
+# df = pd.read_csv("../results/prediction_France_hydro_nops", index_col="period")
 # progressive_prediction()
 # print(df["demand"])
