@@ -13,11 +13,7 @@ def energy_type(df):
     )
     return col_index
 
-def main():
-    countries = [f for f in listdir("../data/") if isfile(join("../data/", f))]
-    for i in range(len(countries)):
-        countries[i] = countries[i][5:-4]
-    
+def individual_execution(countries):
     print("############################# Choose a country ############################# \n")
     print(countries)
     country = str(input("\n Choose a country from the list above and enter the name here: "))
@@ -36,6 +32,30 @@ def main():
     else:
         raise Exception("Please a valid option between 1 or 2")
 
+def predict_all(countries):
+    print("got here")
+
+def main():
+    countries = [f for f in listdir("../data/") if isfile(join("../data/", f))]
+    for i in range(len(countries)):
+        countries[i] = countries[i][5:-4]
+    running = True
+    while (running):
+        print("############################# Choose an option ############################# \n")
+        print("Press 1 to produce forecast error report of all countries and energies, Press 2 to do them individually \n Press 3 to exit")
+        option = int(input("\n Choose an option: "))
+        print("\n ############################################################################ \n")
+        if (option == 1):
+            predict_all(countries)
+        elif (option == 2):
+            individual_execution(countries)
+        elif (option == 3):
+            running = False
+        else:
+            print("Please choose an option between 1 or 2")
+    
+    
+    
 
 if __name__=="__main__":
     main()
