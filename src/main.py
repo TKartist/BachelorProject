@@ -1,6 +1,6 @@
 from os import listdir
 from os.path import isfile, join
-from forecasting import progressive_prediction
+from forecasting import progressive_prediction, generate_csv
 from data_visualization import visualize_country
 from data_reader import organize_table
 
@@ -33,7 +33,12 @@ def individual_execution(countries):
         raise Exception("Please a valid option between 1 or 2")
 
 def predict_all(countries):
-    print("got here")
+    for country in countries:
+        df = organize_table(country)
+        for col in df.columns:
+            result = progressive_prediction(df, col)
+            generate_csv(result, country, col)
+            
 
 def main():
     countries = [f for f in listdir("../data/") if isfile(join("../data/", f))]
