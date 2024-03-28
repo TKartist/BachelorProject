@@ -8,6 +8,7 @@ from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.seasonal import seasonal_decompose
 from auxiliary import adf_test, performance_analysis, grid_search
 from data_visualization import visualize_error
+import variables as var
 
 
 def view_trend_seasonality(series):
@@ -79,7 +80,7 @@ def series2tuple(series):
     return (series[0], series[1], series[2])
 
 
-def progressive_prediction(df, energy):
+def progressive_prediction(df, energy, pred_algo):
     start = int(len(df) * 0.9) + 1
     prediction_size = 3
     arr_mae = []
@@ -90,7 +91,10 @@ def progressive_prediction(df, energy):
     originals = []
     period = []
     for i in range(start, len(df) + 1):
-        (a, b) = sarima_prediction(df[energy][:i], prediction_size)
+        if (pred_algo == var.SARIMA):
+            (a, b) = sarima_prediction(df[energy][:i], prediction_size)
+        else:
+            (a, b) = arima_prediction(df[energy][:i], prediction_size)
         (MAE, MSE, RMSE, data_mean) = performance_analysis(a, b)
         predictions.append(series2tuple(b))
         originals.append(series2tuple(a))
@@ -117,6 +121,12 @@ def generate_csv(series, country, energy):
         encoding="utf-8",
     )
 
+def generate_csv_all(arima_series, sarima_series, country, energy):
+    df = pd.DataFrame(index=arima_series.index)
+    df[var.ARIMA] = arima_series[var.RMSE]
+    df[var.SARIMA] = sarima_series[var.RMSE]
+    df.to_csv("../results/prediction_" + country + "_" + energy + "_all",
+        encoding="utf-8",)
 
 # country = "France"
 # energy = "hydro_nops"

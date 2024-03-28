@@ -1,8 +1,9 @@
 from os import listdir
 from os.path import isfile, join
-from forecasting import progressive_prediction, generate_csv
+from forecasting import progressive_prediction, generate_csv_all, generate_csv
 from data_visualization import visualize_country
 from data_reader import organize_table
+import variables as var
 
 def energy_type(df):
     print(df.columns)
@@ -28,7 +29,8 @@ def individual_execution(countries):
     if (option == 1):
         visualize_country(df, col_index, country)
     elif (option == 2):
-        result = progressive_prediction(df, df.columns[col_index - 1])
+        result = progressive_prediction(df, df.columns[col_index - 1], var.SARIMA)
+        generate_csv(result, country, df.columns[col_index - 1])
     else:
         raise Exception("Please a valid option between 1 or 2")
 
@@ -36,8 +38,9 @@ def predict_all(countries):
     for country in countries:
         df = organize_table(country)
         for col in df.columns:
-            result = progressive_prediction(df, col)
-            generate_csv(result, country, col)
+            result_sarima = progressive_prediction(df, col, var.SARIMA)
+            result_arima = progressive_prediction(df, col, var.ARIMA)
+            generate_csv_all(result_sarima, result_arima, country, col)
             
 
 def main():
@@ -59,8 +62,7 @@ def main():
         else:
             print("Please choose an option between 1 or 2")
     
-    
-    
 
 if __name__=="__main__":
     main()
+
