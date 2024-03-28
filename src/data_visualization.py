@@ -1,6 +1,9 @@
 import data_reader as dr
 import pandas as pd
 import matplotlib.pyplot as plt
+import variables as var
+from os import listdir
+from os.path import isfile, join
 
 
 def visualize_country(df, col_index, country_name):
@@ -35,3 +38,28 @@ def visualize_prediction(prediction, data, title):
     plt.xlabel("Date")
     plt.ylabel("Consumption")
     plt.show()
+
+def visualize_model_performance(country, energy):
+    series = pd.read_csv(var.result_dir + "prediction_" + country + "_" + energy + "_all", index_col="period")
+    series.plot.bar(legend=True, figsize=(16, 10))
+    plt.title(country + " " + energy + " forecasting performance")
+    plt.xlabel("Date")
+    plt.ylabel("RMSE")
+    plt.show()
+
+# visualize_model_performance("Switzerland", "ror")
+
+def visualize_model_performance_all():
+    files = [f for f in listdir(var.result_dir) if isfile(join(var.result_dir, f))]
+    df = pd.DataFrame()
+    for file in files:
+        df1 = pd.read_csv(var.result_dir + file)
+        df = pd.concat([df, df1])
+    df.drop([var.PERIOD], axis=1, inplace=True)
+    df.boxplot(column=[var.ARIMA, var.SARIMA])
+    plt.xlabel("model")
+    plt.ylabel("data")
+    plt.show()
+
+visualize_model_performance_all()
+
