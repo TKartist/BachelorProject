@@ -37,4 +37,5 @@ def organize_table(filename):
         temp_df = df[df["item"] == energy]
         temp_df = temp_df.set_index("date")
         new_df[energy] = temp_df["value"]
+    new_df.fillna(0, inplace=True)
     return new_df

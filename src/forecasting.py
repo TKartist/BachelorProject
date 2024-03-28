@@ -81,7 +81,7 @@ def series2tuple(series):
 
 
 def progressive_prediction(df, energy, pred_algo):
-    start = int(len(df) * 0.9) + 1
+    start = int(len(df) * 0.97) + 1
     prediction_size = 3
     arr_mae = []
     arr_mse = []
