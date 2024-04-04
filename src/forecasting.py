@@ -7,7 +7,8 @@ from pmdarima.arima import auto_arima
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.seasonal import seasonal_decompose
 from auxiliary import adf_test, performance_analysis, grid_search
-from data_visualization import visualize_error
+from data_visualization import visualize_error, visualize_prediction
+from data_reader import organize_table
 import variables as var
 
 
@@ -35,7 +36,7 @@ def arima_prediction(series, test_size):
     train = series[:-test_size]
     test = series[-test_size:]
 
-    model = grid_search(series, (3, 0, 1))
+    model = grid_search(series, arima.order)
     results = model.fit()
 
     start = len(train)
@@ -48,6 +49,7 @@ def arima_prediction(series, test_size):
 
 # Seasonal AutoRegressive Integrated Moving Average Model
 def sarima_prediction(series, test_size):
+    print(len(series))
     sarima = auto_arima(
         series,
         start_p=0,
@@ -55,6 +57,7 @@ def sarima_prediction(series, test_size):
         max_p=10,
         max_q=10,
         seasonal=True,
+        trace=False,
         m=12,
     )
     order = sarima.order
@@ -65,9 +68,9 @@ def sarima_prediction(series, test_size):
 
     start = len(train)
     end = start + len(test) - 1
-
+    print(test)
     model = SARIMAX(
-        train, order=order, seasonal_order=seasonal_order, enforce_invertibility=False
+        train, order=order, seasonal_order=seasonal_order, enforce_invertibility=False,
     )
     results = model.fit()
     predictions = results.predict(start, end, typ="levels").rename(
@@ -81,7 +84,7 @@ def series2tuple(series):
 
 
 def progressive_prediction(df, energy, pred_algo):
-    start = int(len(df) * 0.97) + 1
+    start = int(len(df) * 0.90) + 1
     prediction_size = 3
     arr_mae = []
     arr_mse = []
@@ -90,7 +93,7 @@ def progressive_prediction(df, energy, pred_algo):
     predictions = []
     originals = []
     period = []
-    for i in range(start, len(df) + 1):
+    for i in range(start, len(df)):
         if (pred_algo == var.SARIMA):
             (a, b) = sarima_prediction(df[energy][:i], prediction_size)
         else:
@@ -117,7 +120,7 @@ def progressive_prediction(df, energy, pred_algo):
 
 def generate_csv(series, country, energy):
     series.to_csv(
-        "../results/prediction_" + country + "_" + energy,
+        "../results/prediction_" + country + "_" + energy + ".csv",
         encoding="utf-8",
     )
 
@@ -125,12 +128,17 @@ def generate_csv_all(arima_series, sarima_series, country, energy):
     df = pd.DataFrame(index=arima_series.index)
     df[var.ARIMA] = arima_series[var.RMSE]
     df[var.SARIMA] = sarima_series[var.RMSE]
-    df.to_csv("../results/prediction_" + country + "_" + energy + "_all",
+    df[var.MEAN] = sarima_series[var.MEAN]
+    df.to_csv("../results/prediction_" + country + "_" + energy + "_all.csv",
         encoding="utf-8",)
 
-# country = "France"
-# energy = "hydro_nops"
-# generate_csv(progressive_prediction(country, energy), country, energy)
-# df = pd.read_csv("../results/prediction_France_hydro_nops", index_col="period")
-# progressive_prediction()
+country = "Switzerland"
+l = organize_table(country)
+energy = "ror"
+print(l[energy][:len(l)])
+# generate_csv(progressive_prediction(l, energy, var.SARIMA), country, energy)
+(a,b) = sarima_prediction(l[energy][:len(l)], 3)
+visualize_prediction(l[energy], b, "a")
+# df = pd.read_csv("../results/prediction_France_demand_all.csv", index_col="period")
 # print(df["demand"])
+# print(a, b)

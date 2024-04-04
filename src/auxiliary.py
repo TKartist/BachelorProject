@@ -48,7 +48,6 @@ def performance_analysis(data, predictions):
 # i.e. (p, d, q) == (0,0,0)
 def grid_search(series, order):
     if order[0] > 0 or order[2] > 0:
-        # perform grid_search
         model = ARIMA(series, order=order)
         return model
     p = range(1, 7)

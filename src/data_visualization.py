@@ -39,15 +39,21 @@ def visualize_prediction(prediction, data, title):
     plt.ylabel("Consumption")
     plt.show()
 
+
 def visualize_model_performance(country, energy):
-    series = pd.read_csv(var.result_dir + "prediction_" + country + "_" + energy + "_all", index_col="period")
+    series = pd.read_csv(
+        var.result_dir + "prediction_" + country + "_" + energy + "_all.csv",
+        index_col="period",
+    )
     series.plot.bar(legend=True, figsize=(16, 10))
     plt.title(country + " " + energy + " forecasting performance")
     plt.xlabel("Date")
     plt.ylabel("RMSE")
     plt.show()
 
+
 # visualize_model_performance("Switzerland", "ror")
+
 
 def visualize_model_performance_all():
     files = [f for f in listdir(var.result_dir) if isfile(join(var.result_dir, f))]
@@ -56,10 +62,11 @@ def visualize_model_performance_all():
         df1 = pd.read_csv(var.result_dir + file)
         df = pd.concat([df, df1])
     df.drop([var.PERIOD], axis=1, inplace=True)
+    df[var.ARIMA] = df[var.ARIMA] / df[var.MEAN] * 100
+    df[var.SARIMA] = df[var.SARIMA] / df[var.MEAN] * 100
     df.boxplot(column=[var.ARIMA, var.SARIMA])
+    print(df[df[var.MEAN] == 0])
+    plt.title("Overall RMSE / MEAN * 100 ARIMA vs SARIMA")
     plt.xlabel("model")
     plt.ylabel("data")
     plt.show()
-
-visualize_model_performance_all()
-
