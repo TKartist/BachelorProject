@@ -10,6 +10,8 @@ from auxiliary import adf_test, performance_analysis, grid_search
 from data_visualization import visualize_error, visualize_prediction
 from data_reader import organize_table
 import variables as var
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, message='Non-invertible|Non-stationary')
 
 
 def view_trend_seasonality(series):
@@ -69,10 +71,16 @@ def sarima_prediction(series, test_size):
     start = len(train)
     end = start + len(test) - 1
     print(test)
-    model = SARIMAX(
-        train, order=order, seasonal_order=seasonal_order, enforce_invertibility=False,
-    )
-    results = model.fit()
+    try:
+        model = SARIMAX(
+            train, order=order, seasonal_order=seasonal_order, enforce_invertibility=True,
+        )
+        results = model.fit()
+    except:
+        model = SARIMAX(
+            train, order=order, seasonal_order=seasonal_order, enforce_invertibility=False,
+        )
+        results = model.fit()
     predictions = results.predict(start, end, typ="levels").rename(
         "SARIMA PREDICTION " + str(order) + "X" + str(seasonal_order)
     )
@@ -132,13 +140,13 @@ def generate_csv_all(arima_series, sarima_series, country, energy):
     df.to_csv("../results/prediction_" + country + "_" + energy + "_all.csv",
         encoding="utf-8",)
 
-country = "Switzerland"
-l = organize_table(country)
-energy = "ror"
-print(l[energy][:len(l)])
+# country = "Switzerland"
+# l = organize_table(country)
+# energy = "ror"
+# print(l[energy][:len(l)])
 # generate_csv(progressive_prediction(l, energy, var.SARIMA), country, energy)
-(a,b) = sarima_prediction(l[energy][:len(l)], 3)
-visualize_prediction(l[energy], b, "a")
+# (a,b) = sarima_prediction(l[energy][:len(l)], 3)
+# visualize_prediction(l[energy], b, "a")
 # df = pd.read_csv("../results/prediction_France_demand_all.csv", index_col="period")
 # print(df["demand"])
 # print(a, b)

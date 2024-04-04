@@ -70,3 +70,5 @@ def visualize_model_performance_all():
     plt.xlabel("model")
     plt.ylabel("data")
     plt.show()
+
+visualize_model_performance_all()
