@@ -92,7 +92,7 @@ def series2tuple(series):
 
 
 def progressive_prediction(df, energy, pred_algo):
-    start = int(len(df) * 0.90) + 1
+    start = int(len(df) * 0.97)
     prediction_size = 3
     arr_mae = []
     arr_mse = []
@@ -137,6 +137,7 @@ def generate_csv_all(arima_series, sarima_series, country, energy):
     df[var.ARIMA] = arima_series[var.RMSE]
     df[var.SARIMA] = sarima_series[var.RMSE]
     df[var.MEAN] = sarima_series[var.MEAN]
+    df[var.SOURCE] = country + "_" + energy
     df.to_csv("../results/prediction_" + country + "_" + energy + "_all.csv",
         encoding="utf-8",)
 

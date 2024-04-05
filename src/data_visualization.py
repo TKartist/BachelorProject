@@ -1,9 +1,9 @@
-import data_reader as dr
 import pandas as pd
 import matplotlib.pyplot as plt
 import variables as var
 from os import listdir
 from os.path import isfile, join
+from data_reader import organize_table
 
 
 def visualize_country(df, col_index, country_name):
@@ -22,6 +22,9 @@ def visualize_country(df, col_index, country_name):
         )
     plt.show()
 
+c = organize_table("Greece")
+# visualize_country(c, 1, "Slovakia")
+print(c)
 
 def visualize_error(series, type, country, energy):
     series[[type, "Mean"]].plot.bar(legend=True, figsize=(12, 8))
@@ -60,15 +63,16 @@ def visualize_model_performance_all():
     df = pd.DataFrame()
     for file in files:
         df1 = pd.read_csv(var.result_dir + file)
+        df1.drop(df1[df1[var.MEAN] == 0].index, inplace=True)
         df = pd.concat([df, df1])
     df.drop([var.PERIOD], axis=1, inplace=True)
     df[var.ARIMA] = df[var.ARIMA] / df[var.MEAN] * 100
     df[var.SARIMA] = df[var.SARIMA] / df[var.MEAN] * 100
+    print(df[df[var.ARIMA] > 100])
     df.boxplot(column=[var.ARIMA, var.SARIMA])
-    print(df[df[var.MEAN] == 0])
     plt.title("Overall RMSE / MEAN * 100 ARIMA vs SARIMA")
     plt.xlabel("model")
     plt.ylabel("data")
     plt.show()
 
-visualize_model_performance_all()
+# visualize_model_performance_all()

@@ -39,3 +39,6 @@ def organize_table(filename):
         new_df[energy] = temp_df["value"]
     new_df.fillna(0, inplace=True)
     return new_df
+
+df = pd.read_csv("../data/" + "data_Greece.csv")
+print(df)
