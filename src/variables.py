@@ -6,3 +6,6 @@ result_dir = "../results/"
 PERIOD = "period"
 MEAN = "Mean"
 SOURCE = "Country + Energy"
+DATE = "date"
+data_dir = "../data/"
+predictionCount = 3

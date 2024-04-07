@@ -21,9 +21,11 @@ def visualize_country(df, col_index, country_name):
         )
     plt.show()
 
+# visualize_country(df, 5, "Croatia")
+
 def visualize_error(series, type, country, energy):
-    series[[type, "Mean"]].plot.bar(legend=True, figsize=(12, 8))
-    plt.xlabel("date")
+    series[[type, var.MEAN]].plot.bar(legend=True, figsize=(12, 8))
+    plt.xlabel(var.DATE)
     plt.ylabel(type + " against mean")
     plt.title(country + " " + energy + " forecasting RMSE vs Data Mean")
     plt.show()
@@ -33,7 +35,7 @@ def visualize_prediction(prediction, data, title):
     prediction.plot(legend=True, figsize=(16, 10))
     data.plot(legend=True)
     plt.title(title)
-    plt.xlabel("Date")
+    plt.xlabel(var.DATE)
     plt.ylabel("Consumption")
     plt.show()
 
@@ -45,8 +47,8 @@ def visualize_model_performance(country, energy):
     )
     series.plot.bar(legend=True, figsize=(16, 10))
     plt.title(country + " " + energy + " forecasting performance")
-    plt.xlabel("Date")
-    plt.ylabel("RMSE")
+    plt.xlabel(var.DATE)
+    plt.ylabel(var.RMSE)
     plt.show()
 
 

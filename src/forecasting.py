@@ -10,6 +10,7 @@ from auxiliary import adf_test, performance_analysis, grid_search
 from data_visualization import visualize_error, visualize_prediction
 from data_reader import organize_table
 import variables as var
+from variables import predictionCount
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, message='Non-invertible|Non-stationary')
 
@@ -92,8 +93,8 @@ def series2tuple(series):
 
 
 def progressive_prediction(df, energy, pred_algo):
-    start = int(len(df) * 0.97)
-    prediction_size = 3
+    target = df[energy].drop(df[df[energy] == 0].index)
+    start = int(len(target) - predictionCount - 1)
     arr_mae = []
     arr_mse = []
     arr_rmse = []
@@ -101,11 +102,11 @@ def progressive_prediction(df, energy, pred_algo):
     predictions = []
     originals = []
     period = []
-    for i in range(start, len(df)):
+    for i in range(start, len(target)):
         if (pred_algo == var.SARIMA):
-            (a, b) = sarima_prediction(df[energy][:i], prediction_size)
+            (a, b) = sarima_prediction(target[:i], predictionCount)
         else:
-            (a, b) = arima_prediction(df[energy][:i], prediction_size)
+            (a, b) = arima_prediction(target[:i], predictionCount)
         (MAE, MSE, RMSE, data_mean) = performance_analysis(a, b)
         predictions.append(series2tuple(b))
         originals.append(series2tuple(a))
@@ -128,7 +129,7 @@ def progressive_prediction(df, energy, pred_algo):
 
 def generate_csv(series, country, energy):
     series.to_csv(
-        "../results/prediction_" + country + "_" + energy + ".csv",
+        var.result_dir + "prediction_" + country + "_" + energy + ".csv",
         encoding="utf-8",
     )
 
