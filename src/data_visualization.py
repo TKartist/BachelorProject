@@ -7,7 +7,6 @@ from data_reader import organize_table
 
 
 def visualize_country(df, col_index, country_name):
-    # _, axs = plt.subplots(2, 1, figsize=(16, 10))
     if col_index == 0:
         df.plot(
             figsize=(16, 10), title="Energy consumption monthly data " + country_name
@@ -21,10 +20,6 @@ def visualize_country(df, col_index, country_name):
             + "' energy consumption monthly data",
         )
     plt.show()
-
-c = organize_table("Greece")
-# visualize_country(c, 1, "Slovakia")
-print(c)
 
 def visualize_error(series, type, country, energy):
     series[[type, "Mean"]].plot.bar(legend=True, figsize=(12, 8))
@@ -68,7 +63,7 @@ def visualize_model_performance_all():
     df.drop([var.PERIOD], axis=1, inplace=True)
     df[var.ARIMA] = df[var.ARIMA] / df[var.MEAN] * 100
     df[var.SARIMA] = df[var.SARIMA] / df[var.MEAN] * 100
-    print(df[df[var.ARIMA] > 100])
+    print(df[df[var.ARIMA] > 50])
     df.boxplot(column=[var.ARIMA, var.SARIMA])
     plt.title("Overall RMSE / MEAN * 100 ARIMA vs SARIMA")
     plt.xlabel("model")

@@ -35,10 +35,12 @@ def organize_table(filename):
     new_df = new_df.set_index("date")
     for energy in energy_types:
         temp_df = df[df["item"] == energy]
+        # temporary patch for Greece as it has 2 demand values (DXT and ADMIE -> providers)
+        # for now I am only taking the DXT values because it is fully provided
+        if (energy == "demand" and extract_country_name(filename) == "Greece"):
+            temp_df = temp_df.drop(temp_df[temp_df["provider"] == "ADMIE"].index)
         temp_df = temp_df.set_index("date")
         new_df[energy] = temp_df["value"]
     new_df.fillna(0, inplace=True)
     return new_df
 
-df = pd.read_csv("../data/" + "data_Greece.csv")
-print(df)
