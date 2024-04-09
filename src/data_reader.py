@@ -44,7 +44,8 @@ def organize_table(filename):
     new_df.fillna(0, inplace=True)
     return new_df
 
-# z = organize_table("Croatia")
+z = organize_table("Austria")
+# print(z)
 # pd.set_option('display.max_rows', None)
 # k = z.drop(z[z["hydro"] == 0].index)
 # print(k["hydro"][:10])

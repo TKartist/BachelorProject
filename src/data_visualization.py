@@ -43,7 +43,7 @@ def visualize_prediction(prediction, data, title):
 def visualize_model_performance(country, energy):
     series = pd.read_csv(
         var.result_dir + "prediction_" + country + "_" + energy + "_all.csv",
-        index_col="period",
+        index_col=var.DATE,
     )
     series.plot.bar(legend=True, figsize=(16, 10))
     plt.title(country + " " + energy + " forecasting performance")
@@ -62,7 +62,7 @@ def visualize_model_performance_all():
         df1 = pd.read_csv(var.result_dir + file)
         df1.drop(df1[df1[var.MEAN] == 0].index, inplace=True)
         df = pd.concat([df, df1])
-    df.drop([var.PERIOD], axis=1, inplace=True)
+    df.drop([var.DATE], axis=1, inplace=True)
     df[var.ARIMA] = df[var.ARIMA] / df[var.MEAN] * 100
     df[var.SARIMA] = df[var.SARIMA] / df[var.MEAN] * 100
     print(df[df[var.ARIMA] > 50])

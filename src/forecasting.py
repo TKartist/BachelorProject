@@ -30,29 +30,31 @@ def arima_prediction(series, test_size):
         max_p=6,
         max_q=6,
         seasonal=False,
-        trace=True,
+        trace=False,
         errpr_action="ignore",
         suppress_warnings=True,
         stepwise=True,
     )
     # train and test set split (assuming we try to predic half a year)
-    train = series[:-test_size]
-    test = series[-test_size:]
+    train_size = len(series) - test_size
+
+    train = series[:train_size]
+    test = series[train_size:]
+
+    start = len(train)
+    end = start + len(test) - 1
 
     model = grid_search(series, arima.order)
     results = model.fit()
 
-    start = len(train)
-    end = len(train) + len(test) - 1
     predictions = results.predict(start=start, end=end, typ="levels").rename(
-        "ARIMA predictions"
+        var.ARIMAP
     )
     return (test, predictions)
 
 
 # Seasonal AutoRegressive Integrated Moving Average Model
 def sarima_prediction(series, test_size):
-    print(len(series))
     sarima = auto_arima(
         series,
         start_p=0,
@@ -66,12 +68,13 @@ def sarima_prediction(series, test_size):
     order = sarima.order
     seasonal_order = sarima.seasonal_order
 
-    train = series[:-test_size]
-    test = series[-test_size:]
+    train_size = len(series) - test_size
+
+    train = series[:train_size]
+    test = series[train_size:]
 
     start = len(train)
     end = start + len(test) - 1
-    print(test)
     try:
         model = SARIMAX(
             train, order=order, seasonal_order=seasonal_order, enforce_invertibility=True,
@@ -82,9 +85,12 @@ def sarima_prediction(series, test_size):
             train, order=order, seasonal_order=seasonal_order, enforce_invertibility=False,
         )
         results = model.fit()
+    
     predictions = results.predict(start, end, typ="levels").rename(
-        "SARIMA PREDICTION " + str(order) + "X" + str(seasonal_order)
+        var.SARIMAP + str(order) + "X" + str(seasonal_order)
     )
+    predictions.index = test.index
+    print(predictions)
     return (test, predictions)
 
 
@@ -94,7 +100,8 @@ def series2tuple(series):
 
 def progressive_prediction(df, energy, pred_algo):
     target = df[energy].drop(df[df[energy] == 0].index)
-    start = int(len(target) - predictionCount - 1)
+    print(len(target))
+    start = int(len(target) - predictionCount)
     arr_mae = []
     arr_mse = []
     arr_rmse = []
@@ -105,6 +112,7 @@ def progressive_prediction(df, energy, pred_algo):
     for i in range(start, len(target)):
         if (pred_algo == var.SARIMA):
             (a, b) = sarima_prediction(target[:i], predictionCount)
+            print(a)
         else:
             (a, b) = arima_prediction(target[:i], predictionCount)
         (MAE, MSE, RMSE, data_mean) = performance_analysis(a, b)
@@ -121,9 +129,8 @@ def progressive_prediction(df, energy, pred_algo):
     out["Mean"] = arr_dm
     out["Data"] = originals
     out["Forecast"] = predictions
-    out["period"] = period
-    out.set_index("period", inplace=True)
-    print(out.index)
+    out[var.DATE] = period
+    out.set_index(var.DATE, inplace=True)
     return out
 
 
@@ -139,6 +146,8 @@ def generate_csv_all(arima_series, sarima_series, country, energy):
     df[var.SARIMA] = sarima_series[var.RMSE]
     df[var.MEAN] = sarima_series[var.MEAN]
     df[var.SOURCE] = country + "_" + energy
+    df[var.ARIMAP] = arima_series[var.FORECAST]
+    df[var.SARIMAP] = arima_series[var.FORECAST]
     df.to_csv("../results/prediction_" + country + "_" + energy + "_all.csv",
         encoding="utf-8",)
 

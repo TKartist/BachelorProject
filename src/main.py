@@ -29,8 +29,11 @@ def individual_execution(countries):
     if (option == 1):
         visualize_country(df, col_index, country)
     elif (option == 2):
-        result = progressive_prediction(df, df.columns[col_index - 1], var.SARIMA)
-        generate_csv(result, country, df.columns[col_index - 1])
+        result_sar = progressive_prediction(df, df.columns[col_index - 1], var.SARIMA)
+        result_ar = progressive_prediction(df, df.columns[col_index - 1], var.ARIMA)
+        print(result_ar)
+        print(result_sar)
+        generate_csv_all(result_sar, result_ar, country, df.columns[col_index - 1])
     else:
         raise Exception("Please a valid option between 1 or 2")
 
