@@ -50,8 +50,8 @@ def grid_search(series, order):
     if order[0] > 0 or order[2] > 0:
         model = ARIMA(series, order=order)
         return model
-    p = range(1, 7)
-    q = range(1, 7)
+    p = range(1, 6)
+    q = range(1, 6)
     best_aic = np.inf
     best_model = None
     pdq = list(itertools.product(p, order, q))

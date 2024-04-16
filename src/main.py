@@ -5,6 +5,7 @@ from data_visualization import visualize_country
 from data_reader import organize_table
 import variables as var
 
+
 def energy_type(df):
     print(df.columns)
     col_index = int(
@@ -14,21 +15,36 @@ def energy_type(df):
     )
     return col_index
 
-def individual_execution(countries):
-    print("############################# Choose a country ############################# \n")
-    print(countries)
-    country = str(input("\n Choose a country from the list above and enter the name here: "))
-    print("\n ############################################################################ \n")
 
-    print("############################# Choose an option ############################# \n")
-    option = int(input(" 1. Visualize Country Data \n 2. Forecast the country trend \n Enter the number: "))
-    print("\n ############################################################################ \n")
+def individual_execution(countries):
+    print(
+        "############################# Choose a country ############################# \n"
+    )
+    print(countries)
+    country = str(
+        input("\n Choose a country from the list above and enter the name here: ")
+    )
+    print(
+        "\n ############################################################################ \n"
+    )
+
+    print(
+        "############################# Choose an option ############################# \n"
+    )
+    option = int(
+        input(
+            " 1. Visualize Country Data \n 2. Forecast the country trend \n Enter the number: "
+        )
+    )
+    print(
+        "\n ############################################################################ \n"
+    )
 
     df = organize_table(country)
     col_index = energy_type(df)
-    if (option == 1):
+    if option == 1:
         visualize_country(df, col_index, country)
-    elif (option == 2):
+    elif option == 2:
         result_sar = progressive_prediction(df, df.columns[col_index - 1], var.SARIMA)
         result_ar = progressive_prediction(df, df.columns[col_index - 1], var.ARIMA)
         print(result_ar)
@@ -37,6 +53,7 @@ def individual_execution(countries):
     else:
         raise Exception("Please a valid option between 1 or 2")
 
+
 def predict_all(countries):
     for country in countries:
         df = organize_table(country)
@@ -44,28 +61,40 @@ def predict_all(countries):
             result_sarima = progressive_prediction(df, col, var.SARIMA)
             result_arima = progressive_prediction(df, col, var.ARIMA)
             generate_csv_all(result_sarima, result_arima, country, col)
-            
+
 
 def main():
-    countries = [f for f in listdir("../data/") if isfile(join("../data/", f))]
+    countries = [
+        f
+        for f in listdir("../data/")
+        if isfile(join("../data/", f)) and f.endswith(".csv")
+    ]
     for i in range(len(countries)):
         countries[i] = countries[i][5:-4]
     running = True
-    while (running):
-        print("############################# Choose an option ############################# \n")
-        print("Press 1 to produce forecast error report of all countries and energies, Press 2 to do them individually \n Press 3 to exit")
+    while running:
+        print(
+            "############################# Choose an option ############################# \n"
+        )
+        print(
+            "Press 1 to produce forecast error report of all countries and energies, Press 2 to do them individually \n",
+            "Press 3 to forecast only France and Germany \n Press 4 to finish",
+        )
         option = int(input("\n Choose an option: "))
-        print("\n ############################################################################ \n")
-        if (option == 1):
+        print(
+            "\n ############################################################################ \n"
+        )
+        if option == 1:
             predict_all(countries)
-        elif (option == 2):
+        elif option == 2:
             individual_execution(countries)
-        elif (option == 3):
+        elif option == 3:
+            predict_all(var.M2)
+        elif option == 4:
             running = False
         else:
             print("Please choose an option between 1 or 2")
-    
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()
-

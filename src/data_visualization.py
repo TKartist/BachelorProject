@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import variables as var
+from forecasting import sarima_prediction, arima_prediction
 from os import listdir
 from os.path import isfile, join
 from data_reader import organize_table
@@ -21,7 +22,9 @@ def visualize_country(df, col_index, country_name):
         )
     plt.show()
 
+
 # visualize_country(df, 5, "Croatia")
+
 
 def visualize_error(series, type, country, energy):
     series[[type, var.MEAN]].plot.bar(legend=True, figsize=(12, 8))
@@ -32,8 +35,8 @@ def visualize_error(series, type, country, energy):
 
 
 def visualize_prediction(prediction, data, title):
-    prediction.plot(legend=True, figsize=(16, 10))
-    data.plot(legend=True)
+    data.plot(legend=True, figsize=(16, 10))
+    prediction.plot(legend=True)
     plt.title(title)
     plt.xlabel(var.DATE)
     plt.ylabel("Consumption")
@@ -52,9 +55,6 @@ def visualize_model_performance(country, energy):
     plt.show()
 
 
-# visualize_model_performance("Switzerland", "ror")
-
-
 def visualize_model_performance_all():
     files = [f for f in listdir(var.result_dir) if isfile(join(var.result_dir, f))]
     df = pd.DataFrame()
@@ -63,13 +63,14 @@ def visualize_model_performance_all():
         df1.drop(df1[df1[var.MEAN] == 0].index, inplace=True)
         df = pd.concat([df, df1])
     df.drop([var.DATE], axis=1, inplace=True)
+    print(df)
     df[var.ARIMA] = df[var.ARIMA] / df[var.MEAN] * 100
     df[var.SARIMA] = df[var.SARIMA] / df[var.MEAN] * 100
-    print(df[df[var.ARIMA] > 50])
     df.boxplot(column=[var.ARIMA, var.SARIMA])
     plt.title("Overall RMSE / MEAN * 100 ARIMA vs SARIMA")
     plt.xlabel("model")
     plt.ylabel("data")
     plt.show()
+
 
 # visualize_model_performance_all()

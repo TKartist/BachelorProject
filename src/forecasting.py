@@ -7,12 +7,13 @@ from pmdarima.arima import auto_arima
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.seasonal import seasonal_decompose
 from auxiliary import adf_test, performance_analysis, grid_search
-from data_visualization import visualize_error, visualize_prediction
-from data_reader import organize_table
 import variables as var
 from variables import predictionCount
 import warnings
-warnings.filterwarnings("ignore", category=UserWarning, message='Non-invertible|Non-stationary')
+
+warnings.filterwarnings(
+    "ignore", category=UserWarning, message="Non-invertible|Non-stationary"
+)
 
 
 def view_trend_seasonality(series):
@@ -25,6 +26,7 @@ def view_trend_seasonality(series):
 def arima_prediction(series, test_size):
     arima = auto_arima(
         series,
+        test="adf",
         start_p=0,
         start_q=0,
         max_p=6,
@@ -47,9 +49,7 @@ def arima_prediction(series, test_size):
     model = grid_search(series, arima.order)
     results = model.fit()
 
-    predictions = results.predict(start=start, end=end, typ="levels").rename(
-        var.ARIMAP
-    )
+    predictions = results.predict(start=start, end=end, typ="levels").rename(var.ARIMAP)
     return (test, predictions)
 
 
@@ -57,13 +57,19 @@ def arima_prediction(series, test_size):
 def sarima_prediction(series, test_size):
     sarima = auto_arima(
         series,
+        m=12,
+        seasonal=True,
+        d=None,
+        test="adf",
         start_p=0,
         start_q=0,
-        max_p=10,
-        max_q=10,
-        seasonal=True,
-        trace=False,
-        m=12,
+        max_p=12,
+        max_q=12,
+        D=None,
+        trace=True,
+        error_action="ignore",
+        suppress_warnings=True,
+        stepwise=True,
     )
     order = sarima.order
     seasonal_order = sarima.seasonal_order
@@ -75,17 +81,15 @@ def sarima_prediction(series, test_size):
 
     start = len(train)
     end = start + len(test) - 1
-    try:
-        model = SARIMAX(
-            train, order=order, seasonal_order=seasonal_order, enforce_invertibility=True,
-        )
-        results = model.fit()
-    except:
-        model = SARIMAX(
-            train, order=order, seasonal_order=seasonal_order, enforce_invertibility=False,
-        )
-        results = model.fit()
-    
+    model = SARIMAX(
+        train,
+        order=order,
+        seasonal_order=seasonal_order,
+        enforce_stationarity=False,
+        enforce_invertibility=False,
+    )
+    results = model.fit()
+
     predictions = results.predict(start, end, typ="levels").rename(
         var.SARIMAP + str(order) + "X" + str(seasonal_order)
     )
@@ -110,7 +114,7 @@ def progressive_prediction(df, energy, pred_algo):
     originals = []
     period = []
     for i in range(start, len(target)):
-        if (pred_algo == var.SARIMA):
+        if pred_algo == var.SARIMA:
             (a, b) = sarima_prediction(target[:i], predictionCount)
             print(a)
         else:
@@ -140,6 +144,7 @@ def generate_csv(series, country, energy):
         encoding="utf-8",
     )
 
+
 def generate_csv_all(arima_series, sarima_series, country, energy):
     df = pd.DataFrame(index=arima_series.index)
     df[var.ARIMA] = arima_series[var.RMSE]
@@ -147,9 +152,12 @@ def generate_csv_all(arima_series, sarima_series, country, energy):
     df[var.MEAN] = sarima_series[var.MEAN]
     df[var.SOURCE] = country + "_" + energy
     df[var.ARIMAP] = arima_series[var.FORECAST]
-    df[var.SARIMAP] = arima_series[var.FORECAST]
-    df.to_csv("../results/prediction_" + country + "_" + energy + "_all.csv",
-        encoding="utf-8",)
+    df[var.SARIMAP] = sarima_series[var.FORECAST]
+    df.to_csv(
+        "../results/prediction_" + country + "_" + energy + "_all.csv",
+        encoding="utf-8",
+    )
+
 
 # country = "Switzerland"
 # l = organize_table(country)
