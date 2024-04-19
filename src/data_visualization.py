@@ -5,6 +5,7 @@ from forecasting import sarima_prediction, arima_prediction
 from os import listdir
 from os.path import isfile, join
 from data_reader import organize_table
+import numpy as np
 
 
 def visualize_country(df, col_index, country_name):
@@ -73,4 +74,31 @@ def visualize_model_performance_all():
     plt.show()
 
 
-# visualize_model_performance_all()
+def madTings():
+    # Generate some sample data
+    x = np.linspace(0, 2 * np.pi, 100)
+    y = np.sin(x)
+
+    # Create the plot
+    plt.figure(figsize=(8, 6))
+
+    # Plot the line graph
+    plt.plot(x, y, color="blue", label="Sine Wave")
+
+    # Shade the area under the curve
+    plt.fill_between(x, y, color="skyblue", alpha=0.3)
+
+    # Add labels and title
+    plt.xlabel("X-axis")
+    plt.ylabel("Y-axis")
+    plt.title("Sine Wave with Shaded Area")
+
+    # Add legend
+    plt.legend()
+
+    # Display the plot
+    plt.grid(True)
+    plt.show()
+
+
+madTings()
