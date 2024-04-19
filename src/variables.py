@@ -11,4 +11,4 @@ predictionCount = 3
 ARIMAP = "arima_prediction"
 SARIMAP = "sarima_prediction"
 FORECAST = "Forecast"
-M2 = ["France", "Germany"]  # Major 2
+M2 = ["France"]  # Major 2

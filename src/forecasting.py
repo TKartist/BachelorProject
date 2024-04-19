@@ -97,7 +97,6 @@ def sarima_prediction(series, test_size):
         var.SARIMAP + str(order) + "X" + str(seasonal_order)
     )
     predictions.index = test.index
-    print(predictions)
     return (test, predictions)
 
 
@@ -119,12 +118,10 @@ def progressive_prediction(df, energy, pred_algo):
     for i in range(start, len(target)):
         if pred_algo == var.SARIMA:
             (a, b) = sarima_prediction(target[:i], predictionCount)
-            print(a)
         else:
             (a, b) = arima_prediction(target[:i], predictionCount)
         (MAE, MSE, RMSE, data_mean) = performance_analysis(a, b)
-        predictions.append(series2tuple(b))
-        originals.append(series2tuple(a))
+        predictions.append(b)
         arr_mae.append(MAE)
         arr_dm.append(data_mean)
         arr_mse.append(MSE)
@@ -134,7 +131,6 @@ def progressive_prediction(df, energy, pred_algo):
     out["MSE"] = arr_mse
     out["RMSE"] = arr_rmse
     out["Mean"] = arr_dm
-    out["Data"] = originals
     out["Forecast"] = predictions
     out[var.DATE] = period
     out.set_index(var.DATE, inplace=True)
@@ -156,6 +152,8 @@ def generate_csv_all(arima_series, sarima_series, country, energy):
     df[var.SOURCE] = country + "_" + energy
     df[var.ARIMAP] = arima_series[var.FORECAST]
     df[var.SARIMAP] = sarima_series[var.FORECAST]
+    print(arima_series[var.FORECAST])
+    print(sarima_series[var.FORECAST])
     df.to_csv(
         "../results/prediction_" + country + "_" + energy + "_all.csv",
         encoding="utf-8",

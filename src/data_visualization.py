@@ -74,42 +74,13 @@ def visualize_model_performance_all():
     plt.show()
 
 
-def f1(x):
-    return x**2
+def visualize_energy_forecast(country, energy):
+    data = pd.read_csv(
+        "../results/prediction_" + country + "_" + energy + "_all.csv",
+        index_col=var.DATE,
+        parse_dates=True,
+    )
+    print(data["arima_prediction"][1])
 
 
-def f2(x):
-    return 2 * x
-
-
-def madTings():  # Generate x values
-    x = np.linspace(0, 2, 100)
-
-    # Calculate y values for each function
-    y1 = f1(x)
-    y2 = f2(x)
-
-    # Create the plot
-    plt.figure(figsize=(8, 6))
-
-    # Plot the functions
-    plt.plot(x, y1, color="blue", label="f1(x) = x^2", linewidth=0)
-    plt.plot(x, y2, color="red", label="f2(x) = 2x", linewidth=0)
-
-    # Shade the region between the functions
-    plt.fill_between(x, y1, y2, color="gray", alpha=0.3)
-
-    # Add labels and title
-    plt.xlabel("X-axis")
-    plt.ylabel("Y-axis")
-    plt.title("Region between two functions")
-
-    # Add legend
-    plt.legend()
-
-    # Display the plot
-    plt.grid(True)
-    plt.show()
-
-
-madTings()
+visualize_energy_forecast("France", "demand")
