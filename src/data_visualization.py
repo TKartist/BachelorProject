@@ -74,24 +74,35 @@ def visualize_model_performance_all():
     plt.show()
 
 
-def madTings():
-    # Generate some sample data
-    x = np.linspace(0, 2 * np.pi, 100)
-    y = np.sin(x)
+def f1(x):
+    return x**2
+
+
+def f2(x):
+    return 2 * x
+
+
+def madTings():  # Generate x values
+    x = np.linspace(0, 2, 100)
+
+    # Calculate y values for each function
+    y1 = f1(x)
+    y2 = f2(x)
 
     # Create the plot
     plt.figure(figsize=(8, 6))
 
-    # Plot the line graph
-    plt.plot(x, y, color="blue", label="Sine Wave")
+    # Plot the functions
+    plt.plot(x, y1, color="blue", label="f1(x) = x^2", linewidth=0)
+    plt.plot(x, y2, color="red", label="f2(x) = 2x", linewidth=0)
 
-    # Shade the area under the curve
-    plt.fill_between(x, y, color="skyblue", alpha=0.3)
+    # Shade the region between the functions
+    plt.fill_between(x, y1, y2, color="gray", alpha=0.3)
 
     # Add labels and title
     plt.xlabel("X-axis")
     plt.ylabel("Y-axis")
-    plt.title("Sine Wave with Shaded Area")
+    plt.title("Region between two functions")
 
     # Add legend
     plt.legend()
