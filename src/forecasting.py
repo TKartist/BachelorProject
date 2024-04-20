@@ -18,7 +18,6 @@ warnings.filterwarnings(
 
 def view_trend_seasonality(series):
     results = seasonal_decompose(series)
-    print(results.seasonal)
     results.plot()
     plt.show()
 
@@ -106,35 +105,39 @@ def series2tuple(series):
 
 def progressive_prediction(df, energy, pred_algo):
     target = df[energy].drop(df[df[energy] == 0].index)
-    print(len(target))
-    start = int(len(target) - predictionCount)
+    start = int(len(target) - predictionCount - 2)
     arr_mae = []
     arr_mse = []
     arr_rmse = []
     arr_dm = []
-    predictions = []
-    originals = []
     period = []
+    predictions = []
+    pred_col = {}
     for i in range(start, len(target)):
         if pred_algo == var.SARIMA:
-            (a, b) = sarima_prediction(target[:i], predictionCount)
+            (test, pred) = sarima_prediction(target[:i], predictionCount)
         else:
-            (a, b) = arima_prediction(target[:i], predictionCount)
-        (MAE, MSE, RMSE, data_mean) = performance_analysis(a, b)
-        predictions.append(b)
+            (test, pred) = arima_prediction(target[:i], predictionCount)
+        (MAE, MSE, RMSE, data_mean) = performance_analysis(test, pred)
+        for ind in pred.index:
+            if ind in pred_col:
+                pred_col[ind].append(pred[ind])
+            else:
+                pred_col[ind] = [pred[ind]]
+        predictions.append(series2tuple(pred))
         arr_mae.append(MAE)
         arr_dm.append(data_mean)
         arr_mse.append(MSE)
         arr_rmse.append(RMSE)
-        period.append(a.index[0])
+        period.append(test.index[0])
     out = pd.DataFrame(arr_mae, columns=["MAE"])
-    out["MSE"] = arr_mse
-    out["RMSE"] = arr_rmse
-    out["Mean"] = arr_dm
-    out["Forecast"] = predictions
+    out[var.MSE] = arr_mse
+    out[var.RMSE] = arr_rmse
+    out[var.MEAN] = arr_dm
+    out[var.FORECAST] = predictions
     out[var.DATE] = period
     out.set_index(var.DATE, inplace=True)
-    return out
+    return (out, pred_col)
 
 
 def generate_csv(series, country, energy):
@@ -144,7 +147,7 @@ def generate_csv(series, country, energy):
     )
 
 
-def generate_csv_all(arima_series, sarima_series, country, energy):
+def generate_csv_all(sarima_series, arima_series, country, energy):
     df = pd.DataFrame(index=arima_series.index)
     df[var.ARIMA] = arima_series[var.RMSE]
     df[var.SARIMA] = sarima_series[var.RMSE]
@@ -152,21 +155,42 @@ def generate_csv_all(arima_series, sarima_series, country, energy):
     df[var.SOURCE] = country + "_" + energy
     df[var.ARIMAP] = arima_series[var.FORECAST]
     df[var.SARIMAP] = sarima_series[var.FORECAST]
-    print(arima_series[var.FORECAST])
-    print(sarima_series[var.FORECAST])
     df.to_csv(
         "../results/prediction_" + country + "_" + energy + "_all.csv",
         encoding="utf-8",
     )
 
 
-# country = "Switzerland"
-# l = organize_table(country)
-# energy = "ror"
-# print(l[energy][:len(l)])
-# generate_csv(progressive_prediction(l, energy, var.SARIMA), country, energy)
-# (a,b) = sarima_prediction(l[energy][:len(l)], 3)
-# visualize_prediction(l[energy], b, "a")
-# df = pd.read_csv("../results/prediction_France_demand_all.csv", index_col="period")
-# print(df["demand"])
-# print(a, b)
+def generate_csv_area_chart(arima_dict, sarima_dict, country, energy):
+    df = pd.DataFrame(columns=[var.DATE, var.ARIMAP, var.SARIMAP])
+    for key in arima_dict:
+        new_row = {
+            var.DATE: key,
+            var.ARIMAP: arima_dict[key],
+            var.SARIMAP: sarima_dict[key],
+        }
+        df = df.append(new_row, ignore_index=True)
+    df.set_index(var.DATE)
+    df.index.freq = "MS"
+    df.to_csv("../vdata/graph_" + country + "_" + energy + ".csv")
+
+
+# df = dr.organize_table("France")
+# (out, z) = progressive_prediction(df, "demand", "SARIMA")
+# print(z)
+
+# col_names = [var.DATE, "predictions"]
+
+# df = pd.DataFrame(columns=col_names)
+# df.set_index(var.DATE, inplace=True)
+# z = df.loc["x"]
+# print(z)
+
+d = {"a": 1, "b": 2, "c": 3}
+e = {"a": 1, "b": 2, "c": 3}
+df = pd.DataFrame(columns=["key", "d", "e"])
+for key in d:
+    new_row = {"key": key, "d": d[key], "e": e[key]}
+    df = df.append(new_row, ignore_index=True)
+df.set_index("key", inplace=True)
+print(df)

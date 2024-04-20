@@ -1,6 +1,11 @@
 from os import listdir
 from os.path import isfile, join
-from forecasting import progressive_prediction, generate_csv_all, generate_csv
+from forecasting import (
+    progressive_prediction,
+    generate_csv_all,
+    generate_csv,
+    generate_csv_area_chart,
+)
 from data_visualization import visualize_country
 from data_reader import organize_table
 import variables as var
@@ -45,11 +50,14 @@ def individual_execution(countries):
     if option == 1:
         visualize_country(df, col_index, country)
     elif option == 2:
-        result_sar = progressive_prediction(df, df.columns[col_index - 1], var.SARIMA)
-        result_ar = progressive_prediction(df, df.columns[col_index - 1], var.ARIMA)
-        print(result_ar)
-        print(result_sar)
+        (result_sar, pred_sar) = progressive_prediction(
+            df, df.columns[col_index - 1], var.SARIMA
+        )
+        (result_ar, pred_ar) = progressive_prediction(
+            df, df.columns[col_index - 1], var.ARIMA
+        )
         generate_csv_all(result_sar, result_ar, country, df.columns[col_index - 1])
+        generate_csv_area_chart(pred_sar, pred_ar, country, df.columns[col_index - 1])
     else:
         raise Exception("Please a valid option between 1 or 2")
 
@@ -58,9 +66,10 @@ def predict_all(countries):
     for country in countries:
         df = organize_table(country)
         for col in df.columns:
-            result_sarima = progressive_prediction(df, col, var.SARIMA)
-            result_arima = progressive_prediction(df, col, var.ARIMA)
+            (result_sarima, pred_sar) = progressive_prediction(df, col, var.SARIMA)
+            (result_arima, pred_ar) = progressive_prediction(df, col, var.ARIMA)
             generate_csv_all(result_sarima, result_arima, country, col)
+            generate_csv_area_chart(pred_sar, pred_ar, country, col)
 
 
 def main():

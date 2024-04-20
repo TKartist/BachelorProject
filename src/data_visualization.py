@@ -6,6 +6,8 @@ from os import listdir
 from os.path import isfile, join
 from data_reader import organize_table
 import numpy as np
+from io import StringIO
+import ast
 
 
 def visualize_country(df, col_index, country_name):
@@ -60,11 +62,10 @@ def visualize_model_performance_all():
     files = [f for f in listdir(var.result_dir) if isfile(join(var.result_dir, f))]
     df = pd.DataFrame()
     for file in files:
-        df1 = pd.read_csv(var.result_dir + file)
+        df1 = pd.read_csv(var.result_dir + file)[2:]
         df1.drop(df1[df1[var.MEAN] == 0].index, inplace=True)
         df = pd.concat([df, df1])
     df.drop([var.DATE], axis=1, inplace=True)
-    print(df)
     df[var.ARIMA] = df[var.ARIMA] / df[var.MEAN] * 100
     df[var.SARIMA] = df[var.SARIMA] / df[var.MEAN] * 100
     df.boxplot(column=[var.ARIMA, var.SARIMA])
@@ -74,13 +75,24 @@ def visualize_model_performance_all():
     plt.show()
 
 
-def visualize_energy_forecast(country, energy):
-    data = pd.read_csv(
-        "../results/prediction_" + country + "_" + energy + "_all.csv",
+def visualize_pred_margin(country, energy):
+    source = organize_table(country)[energy]
+    df = pd.read_csv(
+        var.vdata_dir + "graph_" + country + "_" + energy + ".csv",
         index_col=var.DATE,
         parse_dates=True,
     )
-    print(data["arima_prediction"][1])
+    df[1:-1]
+    df["arima_prediction"] = df["arima_prediction"].apply(lambda x: ast.literal_eval(x))
+    df["min_range"] = df["arima_prediction"].apply(min)
+    df["max_range"] = df["arima_prediction"].apply(max)
+    print(df["min_range"])
+    print(df["max_range"])
+    plt.plot(df.index, df["max_range"], color="blue", label="max", linewidth=0.2)
+    plt.plot(df.index, df["min_range"], color="red", label="min", linewidth=0.2)
+    plt.fill_between(df.index, df["max_range"], df["min_range"], alpha=0.6)
+    plt.plot(source.index, source, color="blue", linewidth=0.8)
+    plt.show()
 
 
-visualize_energy_forecast("France", "demand")
+visualize_pred_margin("France", "wind")
