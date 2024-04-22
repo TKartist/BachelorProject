@@ -10,6 +10,8 @@ from auxiliary import adf_test, performance_analysis, grid_search
 import variables as var
 from variables import predictionCount
 import warnings
+from statsmodels.tsa.arima.model import ARIMA
+
 
 warnings.filterwarnings(
     "ignore", category=UserWarning, message="Non-invertible|Non-stationary"
@@ -28,27 +30,28 @@ def arima_prediction(series, test_size):
         test="adf",
         start_p=0,
         start_q=0,
-        max_p=3,
-        max_q=3,
+        max_p=5,
+        max_q=5,
+        max_d=2,
         seasonal=False,
         trace=False,
-        errpr_action="ignore",
+        error_action="ignore",
         suppress_warnings=True,
-        stepwise=True,
     )
     # train and test set split (assuming we try to predic half a year)
-    train_size = len(series) - test_size
 
-    train = series[:train_size]
-    test = series[train_size:]
+    train = series[:-test_size]
+    test = series[-test_size:]
 
     start = len(train)
-    end = start + len(test) - 1
+    end = len(train) + len(test)
 
-    model = grid_search(series, arima.order)
+    model = ARIMA(series, order=arima.order)
     results = model.fit()
 
-    predictions = results.predict(start=start, end=end, typ="levels").rename(var.ARIMAP)
+    predictions = results.predict(start=(start + 1), end=end, typ="levels").rename(
+        var.ARIMAP
+    )
     return (test, predictions)
 
 
@@ -63,26 +66,24 @@ def sarima_prediction(series, test_size):
         start_q=0,
         max_p=5,
         max_q=5,
+        max_d=5,
         start_P=0,
         start_Q=0,
         max_P=5,
-        max_Q=5,
-        D=None,
+        max_Q=2,
+        max_D=5,
         trace=False,
         error_action="ignore",
         suppress_warnings=True,
-        stepwise=True,
     )
     order = sarima.order
     seasonal_order = sarima.seasonal_order
 
-    train_size = len(series) - test_size
-
-    train = series[:train_size]
-    test = series[train_size:]
+    train = series[:-test_size]
+    test = series[-test_size:]
 
     start = len(train)
-    end = start + len(test) - 1
+    end = len(train) + len(test)
     model = SARIMAX(
         train,
         order=order,
@@ -92,10 +93,9 @@ def sarima_prediction(series, test_size):
     )
     results = model.fit()
 
-    predictions = results.predict(start, end, typ="levels").rename(
+    predictions = results.predict(start + 1, end, typ="levels").rename(
         var.SARIMAP + str(order) + "X" + str(seasonal_order)
     )
-    predictions.index = test.index
     return (test, predictions)
 
 
@@ -105,7 +105,7 @@ def series2tuple(series):
 
 def progressive_prediction(df, energy, pred_algo):
     target = df[energy].drop(df[df[energy] == 0].index)
-    start = int(len(target) - predictionCount - 2)
+    start = int(len(target) - (var.numberOfPredictions + 2))
     arr_mae = []
     arr_mse = []
     arr_rmse = []
@@ -118,7 +118,7 @@ def progressive_prediction(df, energy, pred_algo):
             (test, pred) = sarima_prediction(target[:i], predictionCount)
         else:
             (test, pred) = arima_prediction(target[:i], predictionCount)
-        (MAE, MSE, RMSE, data_mean) = performance_analysis(test, pred)
+        (MAE, MSE, RMSE, data_mean) = (1, 1, 1, 1)
         for ind in pred.index:
             if ind in pred_col:
                 pred_col[ind].append(pred[ind])
@@ -175,7 +175,7 @@ def generate_csv_area_chart(arima_dict, sarima_dict, country, energy):
     df.to_csv("../vdata/graph_" + country + "_" + energy + ".csv")
 
 
-# df = dr.organize_table("France")
+df = dr.organize_table("France")
 # (out, z) = progressive_prediction(df, "demand", "SARIMA")
 # print(z)
 
@@ -185,12 +185,3 @@ def generate_csv_area_chart(arima_dict, sarima_dict, country, energy):
 # df.set_index(var.DATE, inplace=True)
 # z = df.loc["x"]
 # print(z)
-
-d = {"a": 1, "b": 2, "c": 3}
-e = {"a": 1, "b": 2, "c": 3}
-df = pd.DataFrame(columns=["key", "d", "e"])
-for key in d:
-    new_row = {"key": key, "d": d[key], "e": e[key]}
-    df = df.append(new_row, ignore_index=True)
-df.set_index("key", inplace=True)
-print(df)

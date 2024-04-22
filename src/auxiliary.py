@@ -10,8 +10,7 @@ warnings.filterwarnings("ignore")
 
 
 # True if stationary, False if non-stationary
-def adf_test(series, title=""):
-    print(f"Augumented Dickey Fuller test: {title}\n")
+def adf_test(series):
 
     result = adfuller(series.dropna(), autolag="AIC")
     labels = ["ADF test statistics", "p-val", "# lag used", "# observations"]
@@ -21,17 +20,17 @@ def adf_test(series, title=""):
         out[f"critical value ({key})"] = val
 
     print(out.to_string())
-
-    if result[1] < 0.05:
-        print("\nStrong evidence against Null Hypothesis")
-        print("Rejecting the Null Hypothesis")
-        print("Data has no unit root and is stationary")
-        return True
-    else:
-        print("\nWeak evidence against Null Hypothesis")
-        print("Fail to reject the Null Hypothesis")
-        print("Data has a unit root and is non-stationary")
-        return False
+    return result[1] < 0.05
+    # if result[1] < 0.05:
+    #     print("\nStrong evidence against Null Hypothesis")
+    #     print("Rejecting the Null Hypothesis")
+    #     print("Data has no unit root and is stationary")
+    #     return True
+    # else:
+    #     print("\nWeak evidence against Null Hypothesis")
+    #     print("Fail to reject the Null Hypothesis")
+    #     print("Data has a unit root and is non-stationary")
+    #     return False
 
 
 def performance_analysis(data, predictions):
@@ -50,11 +49,11 @@ def grid_search(series, order):
     if order[0] > 0 or order[2] > 0:
         model = ARIMA(series, order=order)
         return model
-    p = range(1, 3)
-    q = range(1, 3)
+    p = range(1, 5)
+    q = range(1, 5)
     best_aic = np.inf
     best_model = None
-    pdq = list(itertools.product(p, order, q))
+    pdq = list(itertools.product(p, order[1], q))
     for param in pdq:
         try:
             model = ARIMA(series, order=param)

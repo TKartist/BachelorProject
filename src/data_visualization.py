@@ -1,19 +1,18 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import variables as var
-from forecasting import sarima_prediction, arima_prediction
 from os import listdir
 from os.path import isfile, join
 from data_reader import organize_table
-import numpy as np
-from io import StringIO
 import ast
 
 
 def visualize_country(df, col_index, country_name):
     if col_index == 0:
         df.plot(
-            figsize=(16, 10), title="Energy consumption monthly data " + country_name
+            figsize=(16, 10),
+            title="Energy consumption monthly data " + country_name,
+            marker="o",
         )
     else:
         df[df.columns[col_index - 1]].plot(
@@ -22,6 +21,7 @@ def visualize_country(df, col_index, country_name):
             + " '"
             + df.columns[col_index - 1]
             + "' energy consumption monthly data",
+            marker="o",
         )
     plt.show()
 
@@ -82,17 +82,26 @@ def visualize_pred_margin(country, energy):
         index_col=var.DATE,
         parse_dates=True,
     )
-    df[1:-1]
+    df["sarima_prediction"] = df["sarima_prediction"].apply(
+        lambda x: ast.literal_eval(x)
+    )
     df["arima_prediction"] = df["arima_prediction"].apply(lambda x: ast.literal_eval(x))
-    df["min_range"] = df["arima_prediction"].apply(min)
-    df["max_range"] = df["arima_prediction"].apply(max)
+    df["merged"] = df.apply(
+        lambda row: row["arima_prediction"] + row["sarima_prediction"], axis=1
+    )
+    df["min_range"] = df["merged"].apply(min)
+    df["max_range"] = df["merged"].apply(max)
     print(df["min_range"])
     print(df["max_range"])
-    plt.plot(df.index, df["max_range"], color="blue", label="max", linewidth=0.2)
-    plt.plot(df.index, df["min_range"], color="red", label="min", linewidth=0.2)
+    plt.plot(
+        df.index, df["max_range"], color="blue", marker="x", label="max", linewidth=2.0
+    )
+    plt.plot(
+        df.index, df["min_range"], color="red", marker="x", label="min", linewidth=2.0
+    )
     plt.fill_between(df.index, df["max_range"], df["min_range"], alpha=0.6)
-    plt.plot(source.index, source, color="blue", linewidth=0.8)
+    plt.plot(source.index[70:], source[70:], color="blue", marker="o", linewidth=0.8)
     plt.show()
 
 
-visualize_pred_margin("France", "wind")
+visualize_pred_margin("France", "hydro_nops")

@@ -16,3 +16,4 @@ M2 = ["France"]  # Major 2
 preds = "Predictions"
 col_names_pred = [DATE, preds]
 vdata_dir = "../vdata/"
+numberOfPredictions = 6

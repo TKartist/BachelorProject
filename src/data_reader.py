@@ -3,6 +3,7 @@ import numpy as np
 import os
 from variables import DATE, data_dir
 
+
 def clean_filename(filename):
     if filename[0:4] != "data":
         filename = "data_" + filename
@@ -37,15 +38,12 @@ def organize_table(filename):
         temp_df = df[df["item"] == energy]
         # temporary patch for Greece as it has 2 demand values (DXT and ADMIE -> providers)
         # for now I am only taking the DXT values because it is fully provided
-        if (energy == "demand" and extract_country_name(filename) == "Greece"):
+        if energy == "demand" and extract_country_name(filename) == "Greece":
             temp_df = temp_df.drop(temp_df[temp_df["provider"] == "ADMIE"].index)
         temp_df = temp_df.set_index(DATE)
         new_df[energy] = temp_df["value"]
     new_df.fillna(0, inplace=True)
     return new_df
 
+
 z = organize_table("Austria")
-# print(z)
-# pd.set_option('display.max_rows', None)
-# k = z.drop(z[z["hydro"] == 0].index)
-# print(k["hydro"][:10])
