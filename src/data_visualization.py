@@ -26,9 +26,6 @@ def visualize_country(df, col_index, country_name):
     plt.show()
 
 
-# visualize_country(df, 5, "Croatia")
-
-
 def visualize_error(series, type, country, energy):
     series[[type, var.MEAN]].plot.bar(legend=True, figsize=(12, 8))
     plt.xlabel(var.DATE)
@@ -94,14 +91,14 @@ def visualize_pred_margin(country, energy):
     print(df["min_range"])
     print(df["max_range"])
     plt.plot(
-        df.index, df["max_range"], color="blue", marker="x", label="max", linewidth=2.0
+        df.index, df["max_range"], color="blue", marker="x", label="max", linewidth=1.0
     )
     plt.plot(
-        df.index, df["min_range"], color="red", marker="x", label="min", linewidth=2.0
+        df.index, df["min_range"], color="red", marker="x", label="min", linewidth=1.0
     )
     plt.fill_between(df.index, df["max_range"], df["min_range"], alpha=0.6)
-    plt.plot(source.index[70:], source[70:], color="blue", marker="o", linewidth=0.8)
+    plt.plot(source.index[70:], source[70:], color="blue", marker="o", linewidth=1.0)
     plt.show()
 
 
-visualize_pred_margin("France", "hydro_nops")
+visualize_pred_margin("France", "wind")
