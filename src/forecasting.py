@@ -5,7 +5,6 @@ import data_reader as dr
 
 from pmdarima.arima import auto_arima
 from statsmodels.tsa.statespace.sarimax import SARIMAX
-from statsmodels.tsa.seasonal import seasonal_decompose
 from auxiliary import adf_test, performance_analysis, grid_search
 import variables as var
 from variables import predictionCount
@@ -18,12 +17,6 @@ warnings.filterwarnings(
 )
 
 
-def view_trend_seasonality(series):
-    results = seasonal_decompose(series)
-    results.plot()
-    plt.show()
-
-
 def arima_prediction(series, test_size):
     arima = auto_arima(
         series,
@@ -32,7 +25,7 @@ def arima_prediction(series, test_size):
         start_q=0,
         max_p=5,
         max_q=5,
-        max_d=2,
+        max_d=5,
         seasonal=False,
         trace=False,
         error_action="ignore",
@@ -50,9 +43,9 @@ def arima_prediction(series, test_size):
     results = model.fit()
 
     predictions = results.predict(start=(start + 1), end=end, typ="levels").rename(
-        var.ARIMAP
+        arima.order
     )
-    return (test, predictions)
+    return (test, predictions, arima.order)
 
 
 # Seasonal AutoRegressive Integrated Moving Average Model
@@ -92,51 +85,32 @@ def sarima_prediction(series, test_size):
         enforce_invertibility=False,
     )
     results = model.fit()
-
-    predictions = results.predict(start + 1, end, typ="levels").rename(
-        var.SARIMAP + str(order) + "X" + str(seasonal_order)
-    )
-    return (test, predictions)
-
-
-def series2tuple(series):
-    return (series[0], series[1], series[2])
+    title = str(order) + "X" + str(seasonal_order)
+    predictions = results.predict(start + 1, end, typ="levels").rename(title)
+    return (test, predictions, title)
 
 
 def progressive_prediction(df, energy, pred_algo):
     target = df[energy].drop(df[df[energy] == 0].index)
-    start = int(len(target) - (var.numberOfPredictions + 2))
-    arr_mae = []
-    arr_mse = []
-    arr_rmse = []
-    arr_dm = []
-    period = []
-    predictions = []
+    numberOfPredictions = 6
+    start = int(len(target) - numberOfPredictions)
     pred_col = {}
+    out = pd.DataFrame(columns=[var.DATE, var.MAPE, var.RMSPE, var.MEAN, var.order])
     for i in range(start, len(target)):
         if pred_algo == var.SARIMA:
-            (test, pred) = sarima_prediction(target[:i], predictionCount)
+            (test, pred, order) = sarima_prediction(target[:i], predictionCount)
         else:
-            (test, pred) = arima_prediction(target[:i], predictionCount)
-        (MAE, MSE, RMSE, data_mean) = (1, 1, 1, 1)
+            (test, pred, order) = arima_prediction(target[:i], predictionCount)
+        performance = performance_analysis(test, pred)
+        performance[var.order] = order
+        out = out.append(performance, ignore_index=True)
+        print(out)
         for ind in pred.index:
             if ind in pred_col:
                 pred_col[ind].append(pred[ind])
             else:
                 pred_col[ind] = [pred[ind]]
-        predictions.append(series2tuple(pred))
-        arr_mae.append(MAE)
-        arr_dm.append(data_mean)
-        arr_mse.append(MSE)
-        arr_rmse.append(RMSE)
-        period.append(test.index[0])
-    out = pd.DataFrame(arr_mae, columns=["MAE"])
-    out[var.MSE] = arr_mse
-    out[var.RMSE] = arr_rmse
-    out[var.MEAN] = arr_dm
-    out[var.FORECAST] = predictions
-    out[var.DATE] = period
-    out.set_index(var.DATE, inplace=True)
+    out = out.set_index(var.DATE)
     return (out, pred_col)
 
 
@@ -149,12 +123,14 @@ def generate_csv(series, country, energy):
 
 def generate_csv_all(sarima_series, arima_series, country, energy):
     df = pd.DataFrame(index=arima_series.index)
-    df[var.ARIMA] = arima_series[var.RMSE]
-    df[var.SARIMA] = sarima_series[var.RMSE]
     df[var.MEAN] = sarima_series[var.MEAN]
     df[var.SOURCE] = country + "_" + energy
-    df[var.ARIMAP] = arima_series[var.FORECAST]
-    df[var.SARIMAP] = sarima_series[var.FORECAST]
+    df[var.ARIMA] = arima_series[var.RMSPE]
+    df[var.SARIMA] = sarima_series[var.RMSPE]
+    df[var.ARIMAM] = arima_series[var.MAPE]
+    df[var.SARIMAM] = sarima_series[var.MAPE]
+    df[var.order + "X" + var.ARIMA] = arima_series[var.order]
+    df[var.order + "X" + var.SARIMA] = sarima_series[var.order]
     df.to_csv(
         "../results/prediction_" + country + "_" + energy + "_all.csv",
         encoding="utf-8",
@@ -170,7 +146,7 @@ def generate_csv_area_chart(arima_dict, sarima_dict, country, energy):
             var.SARIMAP: sarima_dict[key],
         }
         df = df.append(new_row, ignore_index=True)
-    df.set_index(var.DATE)
+    df = df.set_index(var.DATE)
     df.index.freq = "MS"
     df.to_csv("../vdata/graph_" + country + "_" + energy + ".csv")
 

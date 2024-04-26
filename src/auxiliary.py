@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np
 from statsmodels.tsa.stattools import adfuller
 import warnings
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.metrics import mean_absolute_percentage_error
 import itertools
 from statsmodels.tsa.arima.model import ARIMA
+import variables as var
 
 warnings.filterwarnings("ignore")
 
@@ -21,24 +22,25 @@ def adf_test(series):
 
     print(out.to_string())
     return result[1] < 0.05
-    # if result[1] < 0.05:
-    #     print("\nStrong evidence against Null Hypothesis")
-    #     print("Rejecting the Null Hypothesis")
-    #     print("Data has no unit root and is stationary")
-    #     return True
-    # else:
-    #     print("\nWeak evidence against Null Hypothesis")
-    #     print("Fail to reject the Null Hypothesis")
-    #     print("Data has a unit root and is non-stationary")
-    #     return False
+
+
+def rmspe_calculation(data, predictions):
+    if len(data) != len(predictions):
+        raise ValueError("the length of test set and forecast doesn't match")
+    rmspe = np.sqrt(np.mean(((data - predictions) / data) ** 2)) * 100
+    return rmspe
 
 
 def performance_analysis(data, predictions):
-    MAE = mean_absolute_error(data, predictions)
-    MSE = mean_squared_error(data, predictions)
-    RMSE = np.sqrt(MSE)
+    MAPE = mean_absolute_percentage_error(data, predictions)
+    RMSPE = rmspe_calculation(data, predictions)
     data_mean = data.mean()
-    return (MAE, MSE, RMSE, data_mean)
+    return {
+        var.DATE: data.index[0],
+        var.MAPE: MAPE,
+        var.RMSPE: RMSPE,
+        var.MEAN: data_mean,
+    }
 
 
 # there are obscure cases of auto_arima where the minimum AIC is present after an inverted bell curve

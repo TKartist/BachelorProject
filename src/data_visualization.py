@@ -4,7 +4,18 @@ import variables as var
 from os import listdir
 from os.path import isfile, join
 from data_reader import organize_table
+from statsmodels.tsa.seasonal import seasonal_decompose
 import ast
+
+
+def view_trend_seasonality(series):
+    results = seasonal_decompose(series)
+    results.plot()
+    plt.show()
+
+
+df = organize_table("France")["demand"]
+view_trend_seasonality(df)
 
 
 def visualize_country(df, col_index, country_name):
@@ -48,11 +59,14 @@ def visualize_model_performance(country, energy):
         var.result_dir + "prediction_" + country + "_" + energy + "_all.csv",
         index_col=var.DATE,
     )
-    series.plot.bar(legend=True, figsize=(16, 10))
+    series.boxplot(column=[var.SARIMA, var.ARIMA])
     plt.title(country + " " + energy + " forecasting performance")
-    plt.xlabel(var.DATE)
-    plt.ylabel(var.RMSE)
+    plt.xlabel("model")
+    plt.ylabel(var.RMSPE)
     plt.show()
+
+
+# visualize_model_performance("France", "demand")
 
 
 def visualize_model_performance_all():
@@ -72,6 +86,10 @@ def visualize_model_performance_all():
     plt.show()
 
 
+def firstIteration(list):
+    return (max(list) + min(list)) / 2
+
+
 def visualize_pred_margin(country, energy):
     source = organize_table(country)[energy]
     df = pd.read_csv(
@@ -83,6 +101,8 @@ def visualize_pred_margin(country, energy):
         lambda x: ast.literal_eval(x)
     )
     df["arima_prediction"] = df["arima_prediction"].apply(lambda x: ast.literal_eval(x))
+    df["s_mean"] = df["sarima_prediction"].apply(firstIteration)
+    df["a_mean"] = df["arima_prediction"].apply(firstIteration)
     df["merged"] = df.apply(
         lambda row: row["arima_prediction"] + row["sarima_prediction"], axis=1
     )
@@ -90,15 +110,17 @@ def visualize_pred_margin(country, energy):
     df["max_range"] = df["merged"].apply(max)
     print(df["min_range"])
     print(df["max_range"])
-    plt.plot(
-        df.index, df["max_range"], color="blue", marker="x", label="max", linewidth=1.0
+    plt.plot(df.index, df["s_mean"], color="green", label="sarima median")
+    plt.plot(df.index, df["a_mean"], color="red", label="arima median")
+    plt.fill_between(
+        df.index, df["max_range"], df["min_range"], alpha=0.6, label="prediction region"
     )
     plt.plot(
-        df.index, df["min_range"], color="red", marker="x", label="min", linewidth=1.0
+        source.index[80:], source[80:], color="blue", linewidth=1.0, label="test data"
     )
-    plt.fill_between(df.index, df["max_range"], df["min_range"], alpha=0.6)
-    plt.plot(source.index[70:], source[70:], color="blue", marker="o", linewidth=1.0)
+    plt.legend()
+    plt.title(country + " " + energy + " energy production forecast")
     plt.show()
 
 
-visualize_pred_margin("France", "wind")
+# visualize_pred_margin("France", "wind")
