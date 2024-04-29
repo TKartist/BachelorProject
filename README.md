@@ -3,8 +3,28 @@
 Title: Time series forecasting of European Energy Market
 
 Abstract:
-Due to climate change, the EU is shifting towards renewable energy. In 2022, the share of renewables in gross energy consumption in the EU has reached 23%, and it aims to reach 42.5% by 2030. In this dynamic and ever-evolving landscape of the energy market, the ability to accurately forecast the evolution of the markets is a critical component for market participants. The project aims at developing a framework capable of accurately forecasting the trend of individual renewable energy components contributing to the overall balance of the EU power sector.
+Due to climate change, the EU is transitioning towards renewable energy,
+aiming to increase its share in gross energy consumption to 42.5% by 2030
+from the current 23%. However, the intermittent and seasonal nature of
+renewable energy sources presents challenges in predicting their production
+capacity. In this dynamic and ever-evolving landscape of the energy market,
+the ability to accurately forecast the evolution of renewable energy’s stake
+in the market is a critical component in the decision making process of
+policy makers, and market participants alike. This project aims to explore
+and evaluate the performance of well-established forecasting methods in an-
+ticipating the trends of individual renewable energy components, ultimately
+contributing to the fostering of a balanced, sustainable, and reliable energy
+market in the EU.
 
-The framework processes time-series data for individual energy components. Chronologically sorted observations of regular intervals allow for the derivation of temporal dependencies, historical patterns, and the current trend in the market. These derivations help establish the linear dependence the past values impose on the current values of the variable. Furthermore, they aid the estimation of short-term fluctuations not captured by linear dependence. Our framework combines these predictive analyses to make forecasts using the well-established AutoRegressive Integrated Moving Average method.
-
-The majority of major renewable energy sources are intermittent or seasonal, hence, inconsistent. Our framework addresses these challenges by enabling market participants to estimate the non-renewable energy supply required to meet market gaps, while considering potential fluctuations in renewable energy production and cross-border market demand. By providing a systematic approach to balancing renewable and non-renewable energy sources, our framework contributes to the creation of a green and balanced energy market in the EU, ensuring sustainability and reliability for the future.
+The primary focus of our framework is to assess auto-regressive forecast-
+ing methods, which leverage chronological data intervals to capture temporal
+dependencies from market history, thus ensuring accurate forecasting. How-
+ever, instead of evaluating the model purely reliant on auto-regression, we
+examine more intricate models which extend to incorporate moving-average,
+exploit seasonality of time series data, or those utilising the correlation with
+exogenous variables. Furthermore, To get a better understanding of not only
+accuracy, but precision of the models, short-term forecasts are made itera-
+tively to provide a bigger pool of model performance samples. All model’s
+performance in forecasting the individual energy components are evaluated
+by measuring and visualising the Root Mean Square Percentage Error be-
+tween forecast result and the test data.
