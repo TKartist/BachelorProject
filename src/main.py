@@ -68,8 +68,9 @@ def predict_all(countries):
         for col in df.columns:
             (result_sarima, pred_sar) = progressive_prediction(df, col, var.SARIMA)
             (result_arima, pred_ar) = progressive_prediction(df, col, var.ARIMA)
-            generate_csv_all(result_sarima, result_arima, country, col)
-            generate_csv_area_chart(pred_sar, pred_ar, country, col)
+            (result_dl, pred_dl) = progressive_prediction(df, col, var.DL)
+            generate_csv_all(result_sarima, result_arima, result_dl, country, col)
+            generate_csv_area_chart(pred_sar, pred_ar, pred_dl, country, col)
 
 
 def main():

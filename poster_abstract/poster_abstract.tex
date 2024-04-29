@@ -1,11 +1,12 @@
 \documentclass[acmtog]{acmart}
-
+\usepackage{adjustbox}
 \begin{document}
 
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{Poster Abstract: Time series forecasting of European Energy Market
+\title{Poster Abstract: Forecasting Renewable Energy at European  Markets
+%Time series forecasting of European Energy Market
 }
 
 %%
@@ -18,8 +19,10 @@
 % \authornote{}
 \email{rimh@usi.ch}
 \author{Juraj Kardos}
+\email{juraj.kardos@usi.ch}
+\author{Olaf Schenk}
 \authornotemark[1]
-\email{xxx@usi.ch}
+\email{olaf.schenk@usi.ch}
 \affiliation{%
   \institution{Università della Svizzera italiana}
   \streetaddress{Via Giuseppe Buffi 13}
@@ -33,142 +36,137 @@
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-Due to climate change, the EU is transitioning towards renewable energy, aiming to increase its share in gross energy consumption to 42.5\% by 2030 from the current 23\%. However, the intermittent and seasonal nature of renewable energy sources presents challenges in predicting their production capacity. In this dynamic and ever-evolving landscape of the energy market, the ability to accurately forecast the evolution of renewable energy’s stake in the market is a critical component in the decision making process of policy makers, and market participants alike. This project aims to explore and evaluate the performance of well-established forecasting methods in anticipating the trends of individual renewable energy components, ultimately contributing to the fostering of a balanced, sustainable, and reliable energy market in the EU. \\
-
-The primary focus of our framework is to assess auto-regressive forecasting methods, which leverage chronological data intervals to capture temporal dependencies from market history, thus ensuring accurate forecasting. However, instead of evaluating the model purely reliant on auto-regression, we examine more intricate models which extend to incorporate moving-average, exploit seasonality of time series data, or those utilising the correlation with exogenous variables. Furthermore, To get a better understanding of not only accuracy, but precision of the models, short-term forecasts are made iteratively to provide a bigger pool of model performance samples. All model’s performance in forecasting the individual energy components are evaluated by measuring and visualising the  Root Mean Square Percentage Error between forecast result and the test data. \\
-
-
+The ambitious energy targets, accelerated by the recent energy crisis, are driving the increase of renewable energy share in gross energy consumption.
+% to 42.5\%\cite{eu_renewable_energy}by 2030 from the current 23\%
+However, the intermittent and seasonal nature of renewable energy sources presents challenges in predicting their production capacity. The ability to accurately forecast the evolution of renewable energy’s stake in the dynamic and ever-evolving energy market is a critical component in the decision making process of policy makers, and market participants alike. This project aims to explore and evaluate the performance of well-established forecasting methods in anticipating the trends of individual renewable energy components, ultimately contributing to the fostering of a balanced, sustainable, and reliable energy market in the EU. 
+%
+The primary focus is to assess auto-regressive forecasting methods and advanced models incorporating moving-average, exploit seasonality of time series data, or those utilising the correlation with exogenous variables. The results are presented for data considering recent history of the most significant enegy component at the European energy markets.
+%Furthermore, To get a better understanding of not only accuracy, but precision of the models, short-term forecasts are made iteratively to provide a bigger pool of model performance samples. All model’s performance in forecasting the individual energy components are evaluated by measuring and visualising the  Root Mean Square Percentage Error between forecast result and the test data. \\
 
 \end{abstract}
 
-\keywords{Time series, Forecasting, Energy Market, Predictive analytics, ARIMA}
+\keywords{Data analytics, Forecasting for energy systems, Energy Market, Renewable energy}
 \maketitle
 
 \section{Introduction}
+Policymakers and other energy market participants often stress that they need the grid operational statistics faster \cite{eu_nowcasting}, particularly the European energy supply including renewable energy components, and consumption. The goal of the project is to develop a framework for forecasting the individual energy components contributing to the overall energy balance. The framework consists of well-established forecasting methods which can be easily applied to the energy market data, compare the forecast of various methods and asses the their reliability.
 
-Like a staple good, we have steady demand for energy in our daily lives unlike luxury goods. When visualized, monthly energy demand reveals distinct patterns, with cyclical peaks occurring during winter and lows in summer, notably in July and August. These observations highlight Europe's heightened energy consumption in colder seasons and highlight the data's \textbf{seasonality}, suggesting the possibility of translating these patterns into mathematical models for forecasting future values.\\ 
+%Like a staple good, we have steady demand for energy in our daily lives unlike luxury goods. When visualized, monthly energy demand reveals distinct patterns, with cyclical peaks occurring during winter and lows in summer, notably in July and August. These observations highlight Europe's heightened energy consumption in colder seasons and highlight the data's \textbf{seasonality}, suggesting the possibility of translating these patterns into mathematical models for forecasting future values.\\ 
 
 \subsection{ARIMA}
-ARIMA model is one of the most widely used statistical forecasting model, and it is the center of our evaluation. It is a generalized version of AutoRegressive Moving-Average (ARMA) model and difference between the two models is their ability to handle non-stationary data. Stationarity indicates constancy of statistical property of a dataset such as variance, or mean over time. When data is stationary, it guarantees the stability of underlying patterns in the dataset, and eradicates the concern of the pattern being a result of random fluctuation. ARIMA model is capable of adjusting the data to provide this stability unlike ARMA. \\
+ARIMA model is one of the most widely used statistical forecasting model \cite{enders2014introduction}. It is a generalized version of AutoRegressive Moving-Average (ARMA) model and difference between the two models is their ability to handle non-stationary data. %Stationarity indicates constancy of statistical property of a dataset such as variance, or mean over time. When data is stationary, it guarantees the stability of underlying patterns in the dataset, and eradicates the concern of the pattern being a result of random fluctuation. ARIMA model is capable of adjusting the data to provide this stability unlike ARMA. \\
+Autoregression is a technique used in time series analysis that assumes temporal trend between the values in the dataset, and uncover a function of order \textit{p}. In the auto-regression model, the variable regresses against itself. 
+%Put simply, the current value is calculated using past values, by estimating the influence of these past values on the present value. However, even if we assume the general trend is captured perfectly, there are inconsistent white-noise in the data which are not replicable. 
+ARIMA model \cite{hong2019core} improves the accuracy by factoring in the non-stationarity of the data. All these factors are combined to formularize ARIMA model as the following:
 
-Autoregression is a technique used in time series analysis that assumes temporal trend between the values in the dataset, and uncover a function of order \textit{p}. In the auto-regression model, the variable regresses against itself. Put simply, the current value is calculated using past values, by estimating the influence of these past values (${\phi_1, \phi_2, ... \phi_p}$) on the present value. However, even if we assume the general trend is captured perfectly, there are inconsistent white-noise in the data which are not replicable. Hence, ARIMA model improves the accuracy by replicating these small bumps in the data through factoring in the anomalies in the recent data. All these factors are combined to formularize ARIMA model as the following:
-
-\begin{displaymath}
+\begin{equation}
     \hat{L}_N^{(d)} = C + \sum_{i=1}^{p} \psi_i L_{N - i}^{(d)} + \sum_{j=1}^{q}\varphi_j\epsilon_{N-j} + \epsilon_{N}
-\end{displaymath}
+\end{equation}
 
-\subsection{Seasonality}
+\subsection{SARIMA \& SARIMAX}
+EU energy market data often exhibit seasonal patterns. SARIMA is an extension that considers these seasonal patterns:
 
-As mentioned before, there is a clear seasonality in EU energy market and it would be preferable to incorporate this. There is a ARIMA's variation called S(easonal)ARIMA which extends to look into same interval in previous seasons. When the duration of the season is given, the SARIMA model breaks the data down into seasons and study recurring patterns in those segments. Hence, the estimation of the current value in SARIMA model is carried out as the following:
-
-\begin{displaymath}
+\begin{equation}
     SARIMA = \hat{L}_N^{(d)} + \sum_{i=1}^{P}\Phi_i L_{N - im}^{D} + \sum_{j=1}^{Q}\Theta_j \epsilon_{N - jm}  
-\end{displaymath} 
+\end{equation} 
+
+The EU power sector, just like any other sector, experiences volatility due to exogenous factors such as the climate or the economy. The exogenous variable which has influence on the power sector is collected as additional indicators in the SARIMAX model. 
 
 \subsection{Deep-Learning}
-Along with predictive statistics, deep learning is frequently used in forecasting. Especially, deep-learning using Recurrent-Neural-Network (RNN) is very popular with time series forecasting. As the name suggests, RNN has a property of repeating the process of aggregation and activation unlike normal neural networks. This regression like property of RNN makes it very effective when building a forecasting model, and it would be interesting to evaluate it's performance in comparison to conventional statistical methods. Hence, RNN forecasting method is also in progress of evaluation. \\
+Along with predictive statistics, deep learning (DL) is frequently used in forecasting. Especially, DL using Recurrent-Neural-Network (RNN) with Long Short-term Memory (LSTM) layers is very popular with time series forecasting \cite{raval2018forecasting}. RNN repeats the process of aggregation and activation unlike normal neural networks, and LSTM extends the memory of RNNs. This regression like property of RNN makes it very effective when building a forecasting model, and it would be interesting to evaluate it's performance in comparison to conventional statistical methods.
 
-\section{Method ${\&}$ Material}
+\section{Experimental Setup}
+This sections presents the setup of the forecasting methods considering in the study and presents the data that will be used to evaluate the forecasting accuracy.
 
-\subsection{Procedure}
-\begin{itemize}
-    \item ${(p, d, q)}$ order calculation.
-    
-There are 2 common methods in calculating the ${(p, d, q)}$ values. First method is calculating the ${d}$ value through differencing and \textit{Augumented Dickey-Fuller test}, then finding the order of autoregression (${p}$) through studying temporal correlation using ACF and PACF. Another method is implementing a grid search algorithm which finds the minimum Akaike Information Criterion (AIC) value by trying different combinations of ${(p, d, q)}$ within a given range. Naturally, first method is more efficient whereas the second method is computationally inefficient but simple to implement. However, as computational inefficiency problem is becoming negligent due to the significant enhancement of computational power, we decided to utilize \textit{auto\_arima()} function of \textbf{Python}. Which is a built-in grid search algorithm from \textit{pmdarima} library. \\
+\subsection{Parametrization of the Methods}
 
-However, in certain cases the ${p, d, q}$ (order) calculated using library function doesn't return the global AIC minima due to the efficient library implementation. Hence, we had to build our own grid search algorithm which found the minima amongst all combinations in case the returned order was unsatisfactory (i.e. (0, 0, 0)). As a result, in exchange for negligent increase in execution time, the result of the grid search became much more feasible. \\
+%\subsection{Parametrization of the Methods}
+The autoregressive models need to be parametrized by a set of parameters ${(p, d, q)}$. Their values are determined by \textit{auto\_arima()}\cite{smith2020automated} function of Python, a built-in grid search algorithm from \textit{pmdarima} library.
+To train and measure the performance of the forecasting model, we split our data into two parts, training set and test set. We train the model using 60\% of our data and assign the remaining 40\% as test data set to compare it with the forecast.
 
-\item Train Test Split
+For training of the model, Python's functions from ${statsmodels}$ library\cite{raschka2019hands} are used. The calculated order and seasonal order are passed to the trainer functions along with the train data set. Each model has respective trainer function provided from the ${statsmodels}$ library (${ARIMA(), SARIMAX()}$)\cite{medium_time_series_forecasting} and are configured accordingly with required training data, order of auto-regression, differencing, and moving-average. Finally, the model is fitted to the passed training data. 
+The trained model is used to make a forecast using the model class's ${Predict()}$\cite{medium_time_series_forecasting} function from the starting month to the ending month, in our case considering an interval of 3 months.
+The forecast relies on historical values for estimation, which limits the model's ability to capture incoming trends, resulting in decrease of accuracy as the forecast window increases. To avoid this issue, forecasts are made at quarterly intervals. This approach is particularly necessary because the ARIMA model cannot incorporate new forecast errors into its formula, creating a need for iterative recalculation when the training set is updated. Therefore, we adopt the rolling horizon approach, where after each forecast, the training dataset is expanded by one month, and the model is re-trained before forecasting the future values of subsequent three months. By implementing the rolling horizon approach, the model becomes capable of incorporating real-time updates, mimics continuous learning, and avoids forecasting biases.
 
-To train and measure the performance of the forecasting model, we split our data into two parts, training set and test set. We train the model using 60\% of our data and assign the remaining 40\% as test data set to compare it with the forecast. \\
+\subsection{ Analysis}
 
-\item Training \& Forecasting
-
-For training of the model, we use Python functions from ${statsmodels}$ library. The calculated order and seasonal order are passed to the trainer functions along with the train data set. Each model has respective trainer function provided from the ${statsmodels}$ library (${ARIMA(), SARIMAX()}$) and are configured accordingly with required training data, order of auto-regression, differencing, and moving-average. Finally, the model is fitted to the passed training data. \\
-
-Then the trained model is used to make a forecast using the model class's ${Predict()}$ function from the starting month to the ending month of our designation. Which in our case has an interval of 3 months.\\
-
-\item Rolling Horizon Approach
-
-The forecast relies on historical values for estimation, which limits the model's ability to capture incoming trends, resulting in decrease of accuracy as the forecast window increases. To avoid this issue, forecasts are made at quarterly intervals. This approach is particularly necessary because the ARIMA model cannot incorporate new forecast errors into its formula, creating a need for iterative recalculation when the training set is updated. Therefore, we adopt the rolling horizon approach, where after each forecast, the training dataset is expanded by one month, and the model is re-trained before forecasting the future values of subsequent three months. By implementing the rolling horizon approach, the model becomes capable of incorporating real-time updates, mimics continuous learning, and avoids forecasting biases.\\
-
-\item Analysis
-
-Measuring the performance of forecasting method requires specific metric as our interest is in the relative error between predicted and actual values. Hence, we are using Root-Mean-Squared-Percentage-Error (RMSPE) as the metric for the performance measurement. Similar to Root-Mean-Squared-Error (RMSE), lower values in RMSPE indicate better performance. RMSPE measures the average percentage deviation between predicted and actual values, providing a standardized measure of prediction accuracy that is independent of the scale of the data. The data used for forecasting is not normalized and individual energy components have radically different scale. RMSE is capable of highlighting the difference in model's performance in individual energy components, however, it is not suitable for evaluating how accurate our forecast is, or for showcasing the overall performance. Hence, the RMSPE value provides better insight in evaluating forecasting models. \\
-
-RMSPE value can be derived as the follwing:
-\begin{displaymath}
+The performance of forecasting method is measured in terms of the relative error between predicted and actual values using Root-Mean-Squared-Percentage-Error (RMSPE)\cite{botchkarev_performance_2019}. Lower values in RMSPE indicate better performance. RMSPE measures the average percentage deviation between predicted and actual values, providing a standardized measure of prediction accuracy that is independent of the scale of the data. The data used for forecasting is not normalized and individual energy components have radically different scale. Hence, the RMSPE value provides better insight in evaluating forecasting models. RMSPE is defined as
+\begin{equation}
 \text{RMSPE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} \left( \frac{(Y_i - \hat{Y}_i)}{Y_i} \right)^2} \times 100
-\end{displaymath} \\
-
-\item Exogenous Variable
-
-The EU power sector, just like any other power sector, experiences volatility due to exogenous factors such as the climate or the economy. Hence, the framework evaluates another ARIMA extension called SARIMAX (SARIMA + eXogenous variables) which also is capable of accounting for fluctuations due to the exogenous factors. In this model the exogenous variable which has influence on the European power sector such as the economic or climate indicators are passed to the appropriate time frame. Every data point in time series dataset needs corresponding exogenous variable, and all of them are gathered as a list and passed to SARIMAX function. When forecasting the market movements, the model can reflect on the previous values with similar indicator behaviors from the exogenous variable list to account for the influence of external factors, providing a more comprehensive and accurate forecast.
-\end{itemize}
+\end{equation}
 
 \subsection{Data}
 
-The dataset consists of monthly energy components contributing to the energy balance on the supply and demand side as time series data. The data are published by the national authorities of European countries (usually the transmission system operators or the statistical office) and are collected on the level of the high-voltage transmission grid. The focus of this study is put on the key energy components or the components with the high level of variability, particularly electricity demand, and renewable energy generation such as wind, PV or hydro.  Electricity demand  is crucial for understanding how much power the system needs to meet consumer needs. Demand can vary significantly based on seasonal factors (heating/cooling), economic activity, and population growth. The increasing penetration of renewables significantly impacts supply dynamics. Understanding the variability of wind and solar generation, as well as the dispatchability (controllable generation) of hydro, is critical for managing grid integration challenges and optimizing renewable energy utilization. Data from the January of 2016 onwards is chosen as this period coincides with a significant ramp-up of renewable energy deployment across Europe. Analyzing data from this period allows us to track the evolving energy mix and its impact on power market dynamics. \\
+The dataset consists of monthly energy components contributing to the energy balance on the supply and demand side. The data are published by the national authorities of European countries (usually the transmission system operators or the national statistical offices) and are collected on the level of the high-voltage transmission grid. The focus of this study is put on the key energy components or the components with the high level of variability, particularly electricity demand, and renewable energy generation such as wind, PV or hydro generation.  Electricity demand  is crucial for understanding how much power the system needs to meet consumer needs. Demand can vary significantly based on seasonal factors (heating/cooling), economic activity, and population growth. The increasing penetration of renewables significantly impacts supply dynamics. Understanding the variability of wind and solar generation, as well as the dispatchability (controllable generation) of hydro, is critical for managing grid integration challenges and optimizing renewable energy utilization. Data from the January of 2016 onwards is chosen as this period coincides with a significant ramp-up of renewable energy deployment across Europe. 
 
 \section{Result \& Discussion}
 
-\subsection{Result Table}
-\begin{figure}[hbt!]
+In this section, the forecast result of solar energy production in France is assessed to evaluate the performance of the forecasting models.
+
+Table ~\ref{fig:forecast_result} presents the performance of the models in forecasting the solar energy production in France. Each model iteratively forecasts 3 months starting at each month within the historical data ranging from April-September 2023. The RMSPE between the test data and model's forecast is recorded.
+
+\begin{table}[hbt!]
     \centering
+    \caption{RMSPE of solar energy quarterly forecast in France}
+    \label{fig:forecast_result}
     \resizebox{0.45\textwidth}{!}{
     \begin{tabular}{cccccc}
     \toprule
-    Date & Mean & SARIMA & ARIMA & S-Order & A-Order \\
+    Date & ARIMA & SARIMA & DL & A-Order & S-Order \\
     \midrule
-    2023-03-01 & 35980 & 8.20 & 93.98 & (1,0,0)X(2,0,2,12) & (5,0,0)  \\
-    2023-04-01 & 32624 & 4.73 & 2.83 & (1,0,1)X(5,0,0,12) & (5,0,0)  \\
-    2023-05-01 & 31530 & 1.96 & 82.48 & (3,0,0)X(0,0,2,12) & (5,0,0)  \\
-    2023-06-01 & 31202 & 9.86 & 48.31 & (1,0,0)X(2,0,2,12) & (5,0,0) \\
-    2023-07-01 & 31312 & 13.93 & 1.08 & (1,0,0)X(2,0,1,12) & (5,0,0) \\
-    2023-08-01 & 31660 & 11.80 & 2.83 & (1,0,1)X(2,0,1,12) & (5,0,0) \\
+     2023-04-01 &   10.35 &   11.52 &   13.64 &      (3,0,0) &  (1,0,0)X(1,1,0,12) \\
+     2023-05-01 &    8.78 &    9.18 &   20.32 &      (3,0,0) &  (1,0,0)X(0,1,1,12) \\
+     2023-06-01 &    7.97 &    5.12 &   13.08 &      (3,0,0) &  (1,0,0)X(0,1,1,12) \\
+     2023-07-01 &    8.15 &    5.18 &   11.59 &      (3,0,0) &  (1,0,0)X(0,1,1,12) \\
+     2023-08-01 &    8.11 &    8.89 &    8.67 &      (3,0,0) &  (1,0,0)X(0,1,1,12) \\
+     2023-09-01 &    8.74 &   19.80 &   10.58 &      (3,0,0) &  (1,0,0)X(1,1,0,12) \\
     \bottomrule
+    \textit{mean} & 8.68 & 9.94 & 12.98 & & \\
     \end{tabular}}
-    \caption{Forecast result of power demand in France}
-    \label{fig:forecast_result}
-\end{figure}
+\end{table}
 
-The Figure (~\ref{fig:forecast_result}) is a showcase of the framework evaluating the performance of forecast models using rolling horizon approach through RMSPE metrics, where SARIMA and ARIMA column contains the RMSPE of the forecast against the test value. The table indicates SARIMA model's RMSPE is evenly distributed between approximately 2 to 14, and ARIMA model's RMSPE ranges from approximately 1 to 94 with higher concentration on the lower end (below 3). As mentioned before, lower RMSPE indicates higher performance of the model. Which means SARIMA model in general performs better than ARIMA model, and is more stable in terms of both accuracy and precision. Furthermore, SARIMA-Order (S-Order) seems to be constantly updated, where as ARIMA-Order (A-order) remains constant. This could be interpreted as SARIMA model better reflects the change in trend and seasonality with the consideration of ${seasonality}$ factor, in comparison to the ARIMA model. \\
 
-\subsection{Visualization}
+
+%\subsection{Visualization}
+
+Figure ~\ref{fig:demand_performance_forecast} represents the box-plot of the data from table ~\ref{fig:forecast_result}. This visualization is particularly useful when we are viewing larger scale of performance data from different energy sources and different countries. It displays how accurate the majority of the forecast's are while denoting the spread of the RMSPE values, and the anomalies in the data that are far off from general performance. Hence, enabling simple visual analysis of the result while making the anomalies easier to spot. Forecast performance of the models showcased in Figure ~\ref{fig:demand_performance_forecast} and table ~\ref{fig:forecast_result} highlightes that, in general, ARIMA model has the lowest median of RMSPE (lower is better) with the highest precision, while SARIMA has lower median but lower precision in comparison to the DL model. \\
 
 \begin{figure}[htb!]
     \centering
-    \includegraphics[width=0.4\textwidth]{figures/Figure_3.png}
+    \includegraphics[width=0.49\textwidth, height=4cm]{figures/Figure_3.png}
     \caption{France energy demand forecast performance visualization}
     \label{fig:demand_performance_forecast} % Tag for referencing
 \end{figure}
 
-Figure (~\ref{fig:demand_performance_forecast}) above is the visualization of the SARIMA and ARIMA's performance through box-plotting the RMSPE values. This visualization is particularly useful when we are viewing larger scale of performance data from different energy sources and different countries as we don't have to individually read all tables. It displays how accurate the majority of the forecast's are while denoting the spread of the RMSPE values, and the anomalies in the data that are far off from general performance. Hence, enabling simple visual analysis of the result while making the anomalies easier to spot. The box-plots indicate SARIMA model was approximately 15\% off at worst case, and almost completely accurate in the best cases with median of approxitely below 10\%. Whereas ARIMA model has similar result to SARIMA model in case of best case scenario, while its median and worst case is far worse than that of the SARIMA. It is quite obvious that forecast error of this scale is not originiating from residual factors, and it is more likely to be due to the trend. \\
-
-
 \begin{figure}[htb!]
     \centering
-    \includegraphics[width=0.4\textwidth]{figures/Figure_2.png}
-    \caption{France energy demand forecast}
-    \label{fig:demand_forecast} % Tag for referencing
-\end{figure}
-
-Figure (~\ref{fig:demand_forecast}) displays the forecast made from SARIMA and ARIMA model against the actual values. The shaded region is calculated from finding the maximum and the minimum of a merged forecast results. The green function is generated from the median value of the SARIMA forecasts, and the red function is the function generated from the median value of the ARIMA forecasts. As shown both on figure (~\ref{fig:forecast_result}) and figure (~\ref{fig:demand_performance_forecast}), ARIMA model performs quite poorly in most of the time excluding the last 2 months while SARIMA model performs consistently well over time. However, this is quite a rare case. \\
-
-\begin{figure}[htb!]
-    \centering
-    \includegraphics[width=0.4\textwidth]{figures/Figure_1.png}
+    \includegraphics[width=0.49\textwidth]{figures/Figure_1.png}
     \caption{France solar energy production forecast}
     \label{fig:solar_forecast} % Tag for referencing
 \end{figure}
 
-Figure (~\ref{fig:solar_forecast}) visualizes the forecasts of solar energy production in France against the real values. From the visual analysis, both models perform quite well with some months more accureately forecasted through ARIMA model, and most of the forecasting results exhibit similar pattern. \\
+Figure ~\ref{fig:solar_forecast} illustrates the median forecast values of each model against the test data, along with a shaded region formed from ensemble of forecasts from all models. The models captured the seasonal trend of declining production from September. However, the solar energy production plateu from May to August was not forecasted by any model. The models tended to predict a peak between June to July as it had occurred in the previous years. Especially the forecast made by the DL model predicted much higher peak and generally higher production of solar energy between May to August (Summer) compared to the true data. This is a reasonable expectation as the trend decomposition (shown in Figure ~\ref{fig:seasonal_decompose}) of solar energy production was on an ascending trajectory with every month in 2023 until May producing more energy than the same months in previous years. Although ARIMA and SARIMA models underestimated the production capacity, their accuracy was higher compared to the DL model according to the table ~\ref{fig:forecast_result} and figure ~\ref{fig:demand_performance_forecast}. Possible explanations can be lack of epoches in DL model, or in this scenario may be due to sudden increase in residual factors as shown in the seasonal decomposition, which was accounted for by only statistical models as the benefit of their MA component. Due to seasonal component, forecasts made by SARIMA in June and July are much more accurate than ARIMA model, which already started forecasting a decline in production from May. As a result of all traits combined, the ensemble of all forecasts create an accurate range of where the test data is going to be.
 
+\begin{figure}[htb!]
+    \centering
+    \includegraphics[width=0.49\textwidth]{figures/Figure_4.png}
+    \caption{Seasonal decomposition of solar energy production in France}
+    \label{fig:seasonal_decompose} % Tag for referencing
+\end{figure}
 
+\subsection{Discussion}
+
+Complexity of the model does not translate directly to its quality. Furthermore, none of the models perfectly capture the dynamic movement of renewable energy production while all of them forecast the production capacity to certain accuracy. However, as it can be seen from the analysis, all of them has unique characteristic which makes them perform exceptionally in certain scenarios. While the well-established models are quite accurate on their own, by merging multiple of the well-established models with unique strong suits, it is possible to create a better model. As a simple example, the forecast results of all models are merged to derive a range where the future value may be and it became significantly more reliable. We believe, by choosing right combination of models, it would be possible to create a hybrid model with significantly higher accuracy and precision.
 
 \section{Conclusion}
 
-\section{References}
+This paper has conducted an investigation into the forecasting performance of well-known methods such as ARIMA, SARIMA, providing insights into their strengths and limitations in forecasting demand and production capacity of renewable energies. Through thorough analysis, we have evaluated the effectiveness of these traditional forecasting approaches in evolving European energy market.Our findings demonstrate that while conventional methods such as ARIMA, SARIMA and DL models have shown promise in modeling and forecasting renewable energy production, they may encounter challenges in accurately capturing rapidly shifting trend, seasonality, and residual factors of evolving renewable energy sources. Hence, depending on the properties of the energy components, certain models will outperform the others. These challenges underscore the need for tailor-made forecasting methodologies that can better adapt to the complex dynamics of renewable energy production while using the traditional models as the base.
+Moving forward, future focus should be on exploring alternative forecasting techniques, such as hybrid models, that better incorporate factors such as weather or economic indicators, technological advancements, and policy changes. By exploiting diverse forecasting methodologies and utilising the advancements in data science, we can enhance the accuracy and reliability of renewable energy production forecasts, thus facilitating the transition towards a sustainable and resilient energy future in Europe.
+
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{poster_abstract}
+
 
 \end{document}
 
