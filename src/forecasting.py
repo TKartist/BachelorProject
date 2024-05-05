@@ -94,6 +94,8 @@ def sarima_prediction(series, test_size):
     predictions = results.predict(start, end, typ="levels").rename(title)
     return (test, predictions, title)
 
+def sarimax_prediction(series, test_size):
+    
 
 def dl_forecast(series, test_size):
     # series = pd.DataFrame(series, columns=["demand"])

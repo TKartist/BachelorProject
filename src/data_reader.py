@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
-from variables import DATE, data_dir
+from variables import DATE, data_dir, rebasement
 
 
 def clean_filename(filename):
@@ -23,22 +23,28 @@ def get_filenames():
     return filenames
 
 
-def organize_table(filename):
-    filename = clean_filename(filename)
+def read_country(country):
+    country = clean_filename(country)
     try:
-        df = pd.read_csv(data_dir + filename)
+        df = pd.read_csv(data_dir + country)
     except Exception as e:
         print("Please enter a correct filename")
     df[DATE] = pd.to_datetime({"year": df["year"], "month": df["month"], "day": 1})
-    energy_types = df["item"].unique()
+    return df
+
+
+def organize_table(country):
+    df = read_country(country)
     new_df = pd.DataFrame()
     new_df[DATE] = df[DATE].unique()
     new_df = new_df.set_index(DATE)
+
+    energy_types = df["item"].unique()
     for energy in energy_types:
         temp_df = df[df["item"] == energy]
         # temporary patch for Greece as it has 2 demand values (DXT and ADMIE -> providers)
         # for now I am only taking the DXT values because it is fully provided
-        if energy == "demand" and extract_country_name(filename) == "Greece":
+        if energy == "demand" and extract_country_name(country) == "Greece":
             temp_df = temp_df.drop(temp_df[temp_df["provider"] == "ADMIE"].index)
         temp_df = temp_df.set_index(DATE)
         new_df[energy] = temp_df["value"]
@@ -46,4 +52,12 @@ def organize_table(filename):
     return new_df
 
 
-z = organize_table("Austria")
+def organize_rebasement(country, energy):
+    df = read_country(country)
+    new_df = pd.DataFrame()
+    new_df[DATE] = df[DATE].unique()
+    new_df = new_df.set_index(DATE)
+    temp_df = df[df["item"] == energy]
+    temp_df = temp_df.set_index(DATE)
+    new_df[rebasement] = temp_df[rebasement]
+    return new_df
