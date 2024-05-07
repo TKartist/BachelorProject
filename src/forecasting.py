@@ -142,8 +142,9 @@ def sarimax_prediction(series, test_size, exogenous):
         enforce_invertibility=False,
     )
     results = model.fit()
+    title = str(order) + "X" + str(seasonal_order)
     predictions = results.predict(start, end, exog=exo_test, typ="levels")
-    return predictions
+    return (test, predictions, title)
 
 
 def dl_forecast(series, test_size):
@@ -194,6 +195,8 @@ def progressive_prediction(df, energy, pred_algo):
             (test, pred, order) = sarima_prediction(target[:i], predictionCount)
         elif pred_algo == var.ARIMA:
             (test, pred, order) = arima_prediction(target[:i], predictionCount)
+        elif pred_algo == var.SARIMAX:
+            (test, pred, order) = sarimax_prediction(target[:i], predictionCount)
         else:
             dl_df = pd.DataFrame(target[:i], columns=[energy])
             dl_out = dl_forecast(dl_df, predictionCount)
@@ -203,7 +206,6 @@ def progressive_prediction(df, energy, pred_algo):
         performance = performance_analysis(test, pred)
         performance[var.order] = order
         out = out.append(performance, ignore_index=True)
-        print(out)
         for ind in pred.index:
             if ind in pred_col:
                 pred_col[ind].append(pred[ind])
@@ -225,15 +227,19 @@ def generate_csv(series, country, energy):
     )
 
 
-def generate_csv_all(sarima_series, arima_series, dl_series, country, energy):
+def generate_csv_all(
+    sarima_series, arima_series, dl_series, sarimax_series, country, energy
+):
     df = pd.DataFrame(index=arima_series.index)
     df[var.MEAN] = sarima_series[var.MEAN]
     df[var.SOURCE] = country + "_" + energy
     df[var.ARIMA] = arima_series[var.RMSPE]
     df[var.SARIMA] = sarima_series[var.RMSPE]
     df[var.DL] = dl_series[var.RMSPE]
+    df[var.SARIMAX] = sarimax_series[var.RMSPE]
     df[var.ARIMAM] = arima_series[var.MAPE]
     df[var.SARIMAM] = sarima_series[var.MAPE]
+    df[var.SARIMAXM] = sarimax_series[var.MAPE]
     df[var.DLM] = dl_series[var.MAPE]
     df[var.order + "X" + var.ARIMA] = arima_series[var.order]
     df[var.order + "X" + var.SARIMA] = sarima_series[var.order]
@@ -243,7 +249,9 @@ def generate_csv_all(sarima_series, arima_series, dl_series, country, energy):
     )
 
 
-def generate_csv_area_chart(sarima_dict, arima_dict, dl_dict, country, energy):
+def generate_csv_area_chart(
+    sarima_dict, arima_dict, dl_dict, sarimax_dict, country, energy
+):
     df = pd.DataFrame(columns=[var.DATE, var.ARIMAP, var.SARIMAP, var.DLP])
     for key in arima_dict:
         new_row = {
@@ -251,6 +259,7 @@ def generate_csv_area_chart(sarima_dict, arima_dict, dl_dict, country, energy):
             var.ARIMAP: arima_dict[key],
             var.SARIMAP: sarima_dict[key],
             var.DLP: dl_dict[key],
+            var.SARIMAXP: sarimax_dict[key],
         }
         df = df.append(new_row, ignore_index=True)
     df = df.set_index(var.DATE)
