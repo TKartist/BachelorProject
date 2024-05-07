@@ -52,12 +52,12 @@ def organize_table(country):
     return new_df
 
 
-def organize_rebasement(country, energy):
+def organize_rebasement(country, energy, date):
     df = read_country(country)
     new_df = pd.DataFrame()
     new_df[DATE] = df[DATE].unique()
     new_df = new_df.set_index(DATE)
     temp_df = df[df["item"] == energy]
     temp_df = temp_df.set_index(DATE)
-    new_df[rebasement] = temp_df[rebasement]
-    return new_df
+    new_df[rebasement] = temp_df["value"] / temp_df[rebasement]
+    return new_df[new_df.index <= date]

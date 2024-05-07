@@ -3,9 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import data_reader as dr
 
-from pmdarima.arima import auto_arima
+from pmdarima import auto_arima
 from statsmodels.tsa.statespace.sarimax import SARIMAX
-from auxiliary import adf_test, performance_analysis, grid_search
+from auxiliary import performance_analysis
+from data_reader import organize_rebasement
 import variables as var
 from variables import predictionCount
 import warnings
@@ -22,8 +23,13 @@ warnings.filterwarnings(
 
 
 def arima_prediction(series, test_size):
+    # train and test set split (assuming we try to predic half a year)
+
+    bound = len(series) - test_size
+    train = series[:bound]
+    test = series[bound:]
     arima = auto_arima(
-        series,
+        train,
         test="adf",
         start_p=0,
         start_q=0,
@@ -34,12 +40,9 @@ def arima_prediction(series, test_size):
         trace=False,
         error_action="ignore",
         suppress_warnings=True,
+        method="bfgs",
+        maxiter=100,
     )
-    # train and test set split (assuming we try to predic half a year)
-
-    bound = len(series) - test_size
-    train = series[:bound]
-    test = series[bound:]
 
     start = len(train)
     end = len(train) + len(test) - 1
@@ -55,7 +58,10 @@ def arima_prediction(series, test_size):
 
 # Seasonal AutoRegressive Integrated Moving Average Model
 def sarima_prediction(series, test_size):
-    sarima = auto_arima(
+    bound = len(series) - test_size
+    train = series[:bound]
+    test = series[bound:]
+    stepwise = auto_arima(
         series,
         m=12,
         seasonal=True,
@@ -67,18 +73,17 @@ def sarima_prediction(series, test_size):
         max_d=5,
         start_P=0,
         start_Q=0,
+        start_D=0,
         max_P=5,
         max_Q=2,
         max_D=5,
         trace=False,
         error_action="ignore",
         suppress_warnings=True,
+        method="bfgs",
+        maxiter=100,
     )
-    order = sarima.order
-    seasonal_order = sarima.seasonal_order
-    bound = len(series) - test_size
-    train = series[:bound]
-    test = series[bound:]
+    order, seasonal_order = stepwise.order, stepwise.seasonal_order
 
     start = len(train)
     end = len(train) + len(test) - 1
@@ -94,8 +99,52 @@ def sarima_prediction(series, test_size):
     predictions = results.predict(start, end, typ="levels").rename(title)
     return (test, predictions, title)
 
-def sarimax_prediction(series, test_size):
-    
+
+def sarimax_prediction(series, test_size, exogenous):
+    bound = len(series) - test_size
+    train = series[:bound]
+    test = series[bound:]
+    exo_train = exogenous[:bound]
+    exo_test = exogenous[bound:]
+    stepwise = auto_arima(
+        series,
+        exogenous=exo_train,
+        m=12,
+        seasonal=True,
+        test="adf",
+        start_p=0,
+        start_q=0,
+        max_p=5,
+        max_q=5,
+        max_d=5,
+        start_P=0,
+        start_Q=0,
+        start_D=0,
+        max_P=5,
+        max_Q=2,
+        max_D=5,
+        trace=False,
+        error_action="ignore",
+        suppress_warnings=True,
+        method="bfgs",
+        maxiter=100,
+    )
+    order, seasonal_order = stepwise.order, stepwise.seasonal_order
+
+    start = len(train)
+    end = len(train) + len(test) - 1
+    model = SARIMAX(
+        train,
+        order=order,
+        exog=exo_train,
+        seasonal_order=seasonal_order,
+        enforce_stationarity=False,
+        enforce_invertibility=False,
+    )
+    results = model.fit()
+    predictions = results.predict(start, end, exog=exo_test, typ="levels")
+    return predictions
+
 
 def dl_forecast(series, test_size):
     # series = pd.DataFrame(series, columns=["demand"])
