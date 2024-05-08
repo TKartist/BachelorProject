@@ -55,7 +55,7 @@ def visualize_model_performance(country, energy):
         var.result_dir + "prediction_" + country + "_" + energy + "_all.csv",
         index_col=var.DATE,
     )
-    series.boxplot(column=[var.SARIMA, var.ARIMA, var.DL])
+    series.boxplot(column=[var.SARIMA, var.ARIMA, var.DL, var.SARIMAX])
     plt.title(
         country
         + " "
@@ -100,14 +100,20 @@ def visualize_pred_margin(country, energy):
     )
     df["arima_prediction"] = df["arima_prediction"].apply(lambda x: ast.literal_eval(x))
     df["dl_prediction"] = df["dl_prediction"].apply(lambda x: ast.literal_eval(x))
+    df["sarimax_prediction"] = df["sarimax_prediction"].apply(
+        lambda x: ast.literal_eval(x)
+    )
 
     df["s_mean"] = df["sarima_prediction"].apply(firstIteration)
     df["a_mean"] = df["arima_prediction"].apply(firstIteration)
     df["d_mean"] = df["dl_prediction"].apply(firstIteration)
+    df["sx_mean"] = df["sarimax_prediction"].apply(firstIteration)
+
     df["merged"] = df.apply(
         lambda row: row["arima_prediction"]
         + row["sarima_prediction"]
-        + row["dl_prediction"],
+        + row["dl_prediction"]
+        + row["sarimax_prediction"],
         axis=1,
     )
     df["min_range"] = df["merged"].apply(min)
@@ -117,6 +123,7 @@ def visualize_pred_margin(country, energy):
     )
     plt.plot(df.index, df["a_mean"], color="red", linestyle="--", label="arima median")
     plt.plot(df.index, df["d_mean"], color="black", linestyle="--", label="dl median")
+    plt.plot(df.index, df["sx_mean"], color="yellow", linestyle="--", label="dl median")
 
     plt.fill_between(
         df.index, df["max_range"], df["min_range"], alpha=0.6, label="prediction region"
@@ -129,7 +136,7 @@ def visualize_pred_margin(country, energy):
         label="test data",
     )
     plt.legend(fontsize=11, loc="upper left")
-    plt.title(country + " " + energy + " energy production forecast", fontsize=14)
+    # plt.title(country + " " + energy + " energy production forecast", fontsize=14)
     plt.show()
 
 

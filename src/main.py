@@ -3,7 +3,6 @@ from os.path import isfile, join
 from forecasting import (
     progressive_prediction,
     generate_csv_all,
-    generate_csv,
     generate_csv_area_chart,
 )
 from data_visualization import visualize_country
@@ -50,14 +49,17 @@ def individual_execution(countries):
     if option == 1:
         visualize_country(df, col_index, country)
     elif option == 2:
-        (result_sar, pred_sar) = progressive_prediction(
-            df, df.columns[col_index - 1], var.SARIMA
+        col = df.columns[col_index - 1]
+        (result_sarima, pred_sar) = progressive_prediction(df, col, None, var.SARIMA)
+        (result_arima, pred_ar) = progressive_prediction(df, col, None, var.ARIMA)
+        (result_dl, pred_dl) = progressive_prediction(df, col, None, var.DL)
+        (result_sarimax, pred_sarx) = progressive_prediction(
+            df, col, country, var.SARIMAX
         )
-        (result_ar, pred_ar) = progressive_prediction(
-            df, df.columns[col_index - 1], var.ARIMA
+        generate_csv_all(
+            result_sarima, result_arima, result_dl, result_sarimax, country, col
         )
-        generate_csv_all(result_sar, result_ar, country, df.columns[col_index - 1])
-        generate_csv_area_chart(pred_sar, pred_ar, country, df.columns[col_index - 1])
+        generate_csv_area_chart(pred_sar, pred_ar, pred_dl, pred_sarx, country, col)
     else:
         raise Exception("Please a valid option between 1 or 2")
 
@@ -66,10 +68,14 @@ def predict_all(countries):
     for country in countries:
         df = organize_table(country)
         for col in df.columns:
-            (result_sarima, pred_sar) = progressive_prediction(df, col, var.SARIMA)
-            (result_arima, pred_ar) = progressive_prediction(df, col, var.ARIMA)
-            (result_dl, pred_dl) = progressive_prediction(df, col, var.DL)
-            (result_sarimax, pred_sarx) = progressive_prediction(df, col, var.SARIMAX)
+            (result_sarima, pred_sar) = progressive_prediction(
+                df, col, None, var.SARIMA
+            )
+            (result_arima, pred_ar) = progressive_prediction(df, col, None, var.ARIMA)
+            (result_dl, pred_dl) = progressive_prediction(df, col, None, var.DL)
+            (result_sarimax, pred_sarx) = progressive_prediction(
+                df, col, country, var.SARIMAX
+            )
             generate_csv_all(
                 result_sarima, result_arima, result_dl, result_sarimax, country, col
             )

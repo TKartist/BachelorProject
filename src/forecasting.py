@@ -148,9 +148,6 @@ def sarimax_prediction(series, test_size, exogenous):
 
 
 def dl_forecast(series, test_size):
-    # series = pd.DataFrame(series, columns=["demand"])
-    print(series)
-
     bound = len(series) - test_size
     train = series[:bound]
     test = series[bound:]
@@ -183,7 +180,7 @@ def dl_forecast(series, test_size):
     return test
 
 
-def progressive_prediction(df, energy, pred_algo):
+def progressive_prediction(df, energy, country, pred_algo):
     target = df[energy].drop(df[df[energy] == 0].index)
     numberOfPredictions = 6
     start = int(len(target) - numberOfPredictions)
@@ -196,7 +193,8 @@ def progressive_prediction(df, energy, pred_algo):
         elif pred_algo == var.ARIMA:
             (test, pred, order) = arima_prediction(target[:i], predictionCount)
         elif pred_algo == var.SARIMAX:
-            (test, pred, order) = sarimax_prediction(target[:i], predictionCount)
+            exo = organize_rebasement(country, energy, max(target[:i].index))
+            (test, pred, order) = sarimax_prediction(target[:i], predictionCount, exo)
         else:
             dl_df = pd.DataFrame(target[:i], columns=[energy])
             dl_out = dl_forecast(dl_df, predictionCount)
