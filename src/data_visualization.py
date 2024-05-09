@@ -56,12 +56,6 @@ def visualize_model_performance(country, energy):
         index_col=var.DATE,
     )
     series.boxplot(column=[var.SARIMA, var.ARIMA, var.DL, var.SARIMAX])
-    plt.title(
-        country
-        + " "
-        + energy
-        + " forecasting model performance RMSPE (3 months interval)"
-    )
     plt.xlabel("model")
     plt.ylabel(var.RMSPE)
     plt.show()
@@ -129,8 +123,8 @@ def visualize_pred_margin(country, energy):
         df.index, df["max_range"], df["min_range"], alpha=0.6, label="prediction region"
     )
     plt.plot(
-        source.index[72:],
-        source[72:],
+        source.index[84:],
+        source[84:],
         color="blue",
         linewidth=1.0,
         label="test data",
@@ -147,4 +141,4 @@ def visual_narrative(c, e):
     visualize_model_performance(c, e)
 
 
-visual_narrative("France", "solar")
+visual_narrative("France", "demand")
