@@ -126,10 +126,12 @@ def sarimax_prediction(series, test_size, exogenous):
         trace=False,
         error_action="ignore",
         suppress_warnings=True,
-        method="bfgs",
+        method="nm",
         maxiter=100,
     )
     order, seasonal_order = stepwise.order, stepwise.seasonal_order
+    print(stepwise.summary)
+    print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
     start = len(train)
     end = len(train) + len(test) - 1

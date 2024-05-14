@@ -3,17 +3,25 @@ import numpy as np
 import pandas as pd
 from forecasting import sarimax_prediction, sarima_prediction, arima_prediction
 import matplotlib.pyplot as plt
+import ast
 
-# data = organize_table("France")
-# df = organize_rebasement("France", "demand", max(data.index))
-# # print(df)
-# prediction = sarimax_prediction(data["demand"], 6, df["rebasement"]).rename("SARIMAX")
-# (_, z, _) = sarima_prediction(data["demand"], 6)
-# (_, l, _) = arima_prediction(data["demand"], 6)
-# # data["hydro_nops"][60:].plot(legend=True, figsize=(16, 10))
-# df[80:].plot(legend=True)
-# prediction.plot(legend=True)
-# z.plot(legend=True)
-# l.plot(legend=True)
-# # print(prediction)
-# plt.show()
+data = organize_table("Hungary")
+re = organize_rebasement("Hungary", "demand", max(data.index))
+df = pd.read_csv(
+    "../demand_forecasts/Hungary_predicted_monthly_demand.csv",
+    index_col="date",
+    parse_dates=True,
+)
+df["SARIMAX"] = df["SARIMAX"].apply(lambda x: ast.literal_eval(x))
+
+
+def median_value(list):
+    return (max(list) + min(list)) / 2
+
+
+df["median"] = df["SARIMAX"].apply(median_value)
+
+data["demand"][72:].rename("monthly data").plot(legend=True)
+re["rebasement"][72:].rename("hourly data cumulation").plot(legend=True)
+df["median"].rename("sarimax model forecast").plot(legend=True)
+plt.show()

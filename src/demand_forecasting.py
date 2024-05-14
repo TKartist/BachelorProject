@@ -12,9 +12,7 @@ for country in countries:
     result.to_csv(
         "../demand_forecasts/" + country + "_analysis.csv", index=True, encoding="utf-8"
     )
-    df = pd.DataFrame(
-        list(prediction.items()), columns=["date", SARIMAX + " predictions"]
-    )
+    df = pd.DataFrame(list(prediction.items()), columns=["date", SARIMAX])
     df = df.set_index("date")
     print(df)
     df.to_csv(
