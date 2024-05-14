@@ -78,8 +78,12 @@ def visualize_model_performance_all():
     plt.show()
 
 
-def firstIteration(list):
+def median_calc(list):
     return (max(list) + min(list)) / 2
+
+
+def mean_calc(list):
+    return sum(list) / len(list)
 
 
 def visualize_pred_margin(country, energy):
@@ -98,10 +102,10 @@ def visualize_pred_margin(country, energy):
         lambda x: ast.literal_eval(x)
     )
 
-    df["s_mean"] = df["sarima_prediction"].apply(firstIteration)
-    df["a_mean"] = df["arima_prediction"].apply(firstIteration)
-    df["d_mean"] = df["dl_prediction"].apply(firstIteration)
-    df["sx_mean"] = df["sarimax_prediction"].apply(firstIteration)
+    df["s_mean"] = df["sarima_prediction"].apply(median_calc)
+    df["a_mean"] = df["arima_prediction"].apply(median_calc)
+    df["d_mean"] = df["dl_prediction"].apply(median_calc)
+    df["sx_mean"] = df["sarimax_prediction"].apply(median_calc)
 
     df["merged"] = df.apply(
         lambda row: row["arima_prediction"]
@@ -112,24 +116,38 @@ def visualize_pred_margin(country, energy):
     )
     df["min_range"] = df["merged"].apply(min)
     df["max_range"] = df["merged"].apply(max)
+    df["mean"] = df["merged"].apply(mean_calc)
     plt.plot(
         df.index, df["s_mean"], color="green", linestyle="--", label="sarima median"
     )
     plt.plot(df.index, df["a_mean"], color="red", linestyle="--", label="arima median")
     plt.plot(df.index, df["d_mean"], color="black", linestyle="--", label="dl median")
-    plt.plot(df.index, df["sx_mean"], color="yellow", linestyle="--", label="dl median")
+    plt.plot(
+        df.index, df["sx_mean"], color="yellow", linestyle="--", label="sarimax median"
+    )
 
     plt.fill_between(
-        df.index, df["max_range"], df["min_range"], alpha=0.6, label="prediction region"
+        df.index,
+        df["max_range"],
+        df["min_range"],
+        alpha=0.6,
+        label="range(predictions)",
     )
     plt.plot(
-        source.index[84:],
-        source[84:],
+        df.index,
+        df["mean"],
+        color="purple",
+        linestyle="--",
+        label="mean(predictions)",
+    )
+    plt.plot(
+        source.index[72:],
+        source[72:],
         color="blue",
         linewidth=1.0,
         label="test data",
     )
-    plt.legend(fontsize=11, loc="upper left")
+    plt.legend(fontsize=12.5, loc="upper left")
     # plt.title(country + " " + energy + " energy production forecast", fontsize=14)
     plt.show()
 
@@ -141,4 +159,4 @@ def visual_narrative(c, e):
     visualize_model_performance(c, e)
 
 
-visual_narrative("France", "demand")
+visual_narrative("France", "solar")
