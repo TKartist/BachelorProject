@@ -40,7 +40,7 @@ def arima_prediction(series, test_size):
         trace=False,
         error_action="ignore",
         suppress_warnings=True,
-        method="bfgs",
+        method="nm",
         maxiter=100,
     )
 
@@ -80,7 +80,7 @@ def sarima_prediction(series, test_size):
         trace=False,
         error_action="ignore",
         suppress_warnings=True,
-        method="bfgs",
+        method="nm",
         maxiter=100,
     )
     order, seasonal_order = stepwise.order, stepwise.seasonal_order
@@ -130,8 +130,6 @@ def sarimax_prediction(series, test_size, exogenous):
         maxiter=100,
     )
     order, seasonal_order = stepwise.order, stepwise.seasonal_order
-    print(stepwise.summary)
-    print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
     start = len(train)
     end = len(train) + len(test) - 1
@@ -188,7 +186,6 @@ def progressive_prediction(df, energy, country, pred_algo):
     start = int(len(target) - numberOfPredictions)
     pred_col = {}
     out = pd.DataFrame(columns=[var.DATE, var.MAPE, var.RMSPE, var.MEAN, var.order])
-
     for i in range(start + 1, len(target) + 1):
         if pred_algo == var.SARIMA:
             (test, pred, order) = sarima_prediction(target[:i], predictionCount)
@@ -206,18 +203,15 @@ def progressive_prediction(df, energy, country, pred_algo):
         performance = performance_analysis(test, pred)
         performance[var.order] = order
         out = out.append(performance, ignore_index=True)
+        initial_index = pred.index[0]
         for ind in pred.index:
-            if ind in pred_col:
-                pred_col[ind].append(pred[ind])
+            if initial_index in pred_col:
+                pred_col[initial_index].append(pred[ind])
             else:
-                pred_col[ind] = [pred[ind]]
+                pred_col[initial_index] = [pred[ind]]
+        print(pred_col)
     out = out.set_index(var.DATE)
     return (out, pred_col)
-
-
-# df = dr.organize_table("France")
-# df = pd.DataFrame(df["demand"], columns=["demand"])
-# dl_forecast(df, 3)
 
 
 def generate_csv(series, country, energy):
