@@ -250,10 +250,10 @@ def generate_csv_area_chart(
     for key in arima_dict:
         new_row = {
             var.DATE: key,
-            var.ARIMAP: arima_dict[key],
-            var.SARIMAP: sarima_dict[key],
-            var.DLP: dl_dict[key],
-            var.SARIMAXP: sarimax_dict[key],
+            var.ARIMA: arima_dict[key],
+            var.SARIMA: sarima_dict[key],
+            var.DL: dl_dict[key],
+            var.SARIMAX: sarimax_dict[key],
         }
         df = df.append(new_row, ignore_index=True)
     df = df.set_index(var.DATE)

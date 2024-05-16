@@ -96,25 +96,21 @@ def visualize_pred_margin(country, energy):
         index_col=var.DATE,
         parse_dates=True,
     )
-    df["sarima_prediction"] = df["sarima_prediction"].apply(
-        lambda x: ast.literal_eval(x)
-    )
-    df["arima_prediction"] = df["arima_prediction"].apply(lambda x: ast.literal_eval(x))
-    df["dl_prediction"] = df["dl_prediction"].apply(lambda x: ast.literal_eval(x))
-    df["sarimax_prediction"] = df["sarimax_prediction"].apply(
-        lambda x: ast.literal_eval(x)
-    )
+    df[var.SARIMA] = df[var.SARIMA].apply(lambda x: ast.literal_eval(x))
+    df[var.ARIMA] = df[var.ARIMA].apply(lambda x: ast.literal_eval(x))
+    df[var.DL] = df[var.DL].apply(lambda x: ast.literal_eval(x))
+    df[var.SARIMAX] = df[var.SARIMAX].apply(lambda x: ast.literal_eval(x))
 
-    df["s_mean"] = df["sarima_prediction"].apply(median_calc)
-    df["a_mean"] = df["arima_prediction"].apply(median_calc)
-    df["d_mean"] = df["dl_prediction"].apply(median_calc)
-    df["sx_mean"] = df["sarimax_prediction"].apply(median_calc)
+    df["s_mean"] = df[var.SARIMA].apply(median_calc)
+    df["a_mean"] = df[var.ARIMA].apply(median_calc)
+    df["d_mean"] = df[var.DL].apply(median_calc)
+    df["sx_mean"] = df[var.SARIMAX].apply(median_calc)
 
     df["merged"] = df.apply(
         lambda row: row["arima_prediction"]
-        + row["sarima_prediction"]
-        + row["dl_prediction"]
-        + row["sarimax_prediction"],
+        + row[var.SARIMA]
+        + row[var.DL]
+        + row[var.SARIMAX],
         axis=1,
     )
     df["min_range"] = df["merged"].apply(min)
