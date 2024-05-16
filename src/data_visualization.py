@@ -53,8 +53,7 @@ def visualize_prediction(prediction, data, title):
 
 def visualize_model_performance(country, energy, models):
     series = pd.read_csv(
-        # var.result_dir + "prediction_" + country + "_" + energy + "_all.csv",
-        "../demand_forecasts/prediction_" + country + "_" + energy + "_all.csv",
+        var.result_dir + "prediction_" + country + "_" + energy + "_all.csv",
         index_col=var.DATE,
     )
     # series.boxplot(column=[var.SARIMA, var.ARIMA, var.DL, var.SARIMAX])
@@ -89,6 +88,27 @@ def mean_calc(list):
     return sum(list) / len(list)
 
 
+def pred_struct_alter(df, model):
+    dictionary = {}
+    df[model] = df[model].apply(lambda x: ast.literal_eval(x))
+
+    for m in df.index:
+        for i in range(var.predictionCount):
+            key = m + pd.DateOffset(months=i)
+            if key in dictionary:
+                dictionary[key].append(df[model][m][i])
+            else:
+                dictionary[key] = [df[model][m][i]]
+
+    new_dict = {var.DATE: [], model: []}
+    for key in dictionary:
+        new_dict[var.DATE].append(key)
+        new_dict[model].append(dictionary[key])
+
+    df1 = pd.DataFrame(new_dict).set_index(var.DATE)
+    return df1[model]
+
+
 def visualize_pred_margin(country, energy):
     source = organize_table(country)[energy]
     df = pd.read_csv(
@@ -96,21 +116,20 @@ def visualize_pred_margin(country, energy):
         index_col=var.DATE,
         parse_dates=True,
     )
-    df[var.SARIMA] = df[var.SARIMA].apply(lambda x: ast.literal_eval(x))
-    df[var.ARIMA] = df[var.ARIMA].apply(lambda x: ast.literal_eval(x))
-    df[var.DL] = df[var.DL].apply(lambda x: ast.literal_eval(x))
-    df[var.SARIMAX] = df[var.SARIMAX].apply(lambda x: ast.literal_eval(x))
-
+    df1 = pd.DataFrame(columns=[var.DATE]).set_index(var.DATE)
+    df1.index.freq = "MS"
+    df1[var.SARIMA] = pred_struct_alter(df, var.SARIMA)
+    df1[var.ARIMA] = pred_struct_alter(df, var.ARIMA)
+    df1[var.DL] = pred_struct_alter(df, var.DL)
+    df1[var.SARIMAX] = pred_struct_alter(df, var.SARIMAX)
+    df = df1
     df["s_mean"] = df[var.SARIMA].apply(median_calc)
     df["a_mean"] = df[var.ARIMA].apply(median_calc)
     df["d_mean"] = df[var.DL].apply(median_calc)
     df["sx_mean"] = df[var.SARIMAX].apply(median_calc)
 
     df["merged"] = df.apply(
-        lambda row: row["arima_prediction"]
-        + row[var.SARIMA]
-        + row[var.DL]
-        + row[var.SARIMAX],
+        lambda row: row[var.ARIMA] + row[var.SARIMA] + row[var.DL] + row[var.SARIMAX],
         axis=1,
     )
     df["min_range"] = df["merged"].apply(min)
@@ -151,14 +170,14 @@ def visualize_pred_margin(country, energy):
     plt.show()
 
 
-# def visual_narrative(c, e):
-#     df = organize_table(c)[e]
-#     view_trend_seasonality(df)
-#     visualize_pred_margin(c, e)
-#     visualize_model_performance(c, e)
+def visual_narrative(c, e):
+    df = organize_table(c)[e]
+    view_trend_seasonality(df)
+    visualize_pred_margin(c, e)
+    # visualize_model_performance(c, e)
 
 
-# visual_narrative("France", "solar")
+# visual_narrative("Hungary", "demand")
 
 
 def iterative_forecast_visualization(energy, country, models):
@@ -214,8 +233,17 @@ def iterative_forecast_visualization(energy, country, models):
         title = title + model + ", "
     title = title + "performance of " + energy + " forecast in " + country
     plt.title(title)
+    series = pd.read_csv(
+        var.result_dir + "prediction_" + country + "_" + energy + "_all.csv",
+        index_col=var.DATE,
+    )
+    # series.boxplot(column=[var.SARIMA, var.ARIMA, var.DL, var.SARIMAX])
+    series.boxplot(column=models)
+    plt.xlabel("model")
+    plt.ylabel(var.RMSPE)
     plt.savefig(path + title + ".png")
-    visualize_model_performance(country, energy, models)
+    plt.show()
 
 
-iterative_forecast_visualization("demand", "Romania", ["SARIMAX", "SARIMA", "DL"])
+iterative_forecast_visualization("demand", "Netherlands", ["SARIMAX", "SARIMA", "DL"])
+# visualize_pred_margin("Hungary", "demand")
