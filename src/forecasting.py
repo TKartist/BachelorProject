@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import data_reader as dr
 
 from pmdarima import auto_arima
 from statsmodels.tsa.statespace.sarimax import SARIMAX
@@ -246,7 +244,7 @@ def generate_csv_all(
 def generate_csv_area_chart(
     sarima_dict, arima_dict, dl_dict, sarimax_dict, country, energy
 ):
-    df = pd.DataFrame(columns=[var.DATE, var.ARIMAP, var.SARIMAP, var.DLP])
+    df = pd.DataFrame(columns=[var.DATE, var.ARIMA, var.SARIMA, var.DLP])
     for key in arima_dict:
         new_row = {
             var.DATE: key,

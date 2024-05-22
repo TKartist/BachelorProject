@@ -4,6 +4,17 @@
 \usepackage{float}
 \usepackage{subfigure}
 \usepackage{listings}
+\usepackage{multicol}
+
+% Settings for code listings
+\lstset{
+  basicstyle=\ttfamily, % Use small monospace font
+  columns=flexible,
+  breaklines=true,
+  frame=single,
+  xleftmargin=2pt,
+  xrightmargin=2pt,
+}
 \captionsetup{labelfont={bf}}
 
 \author{Hun Rim}
@@ -102,7 +113,7 @@ This sections presents the setup of the development environment and forecasting 
  \end{itemize}
 \end{itemize}
 
-\subsection{Parametrization of Methods}
+\subsection{Parametrization of Statistical Methods}
 The autoregressive models need to be parametrized by a set of parameters ${(p, d, q)}$. There are mainly 2 approaches in deriving the ${(p,d,q)}$ values, and first method is calculating the $d$ value through differencing the dataset until the result of Augumented Dickey-Fuller test falls below 0.05 and disproves the Null-Hypothesis.
 Then, finding the order of autoregression $p$ through the decay
 of AutoCorrelation Function (ACF), and finding the order of moving-average $q$ through the decay of Partial-Auto Correlation Function (PACF). Second approach is using a brute force approach such as $Grid-Search$. Grid search algorithm finds the minimum Akaike Information Criterion (AIC) value by iterating through a fixed range of parameters of different order. Naturally, first method is more efficient whereas the second method is computationally inefficient but more simple to implement. However, as computational complexity problem is becoming negligent due to the significant enhancement of computational power. In our framework, orders are determined by \textit{auto\_arima()} function of Python, a built-in search algorithm from \textit{pmdarima} library with the grid search elements. It is important to note that depending on the passed parameters, the resultant order and seasonal order differs drastically. \\
@@ -134,16 +145,24 @@ While some values of the parameters are common for all methods, some differ depe
 
 \item method: The parameter "method" refers to optimization method used for the search of the parameters when the stepwise parameter is "True". This parameter holds significant importance in calculating the correct order parameter as depending on the search algorithm, the accuracy can differ drastically.\\
 
-The auto\_arima function has multiple built-in optimization method, and calls \textbf{Limited-memory Broyden-Fletcher-Goldfarb-Shanno} (l-bfgs) method in default, which is a practical gradient-based optimization method for large dataset due to its' quick convergence and memory efficiency. However, l-bfgs and other gradient-based search methods have a common problem of requiring a scenario-specific delicate tuning of hyperparameters. This is because both methods rely on line search to determine appropriate step-size in a search direction to sufficiently decrease the objective function. When hyperparameters such as initial stepsize are poorly tuned, it leads to inefficient searches or convergence issues. Furthermore, gradient-based methods typically perform poorly in noisy, non-differentiable data such as ours.\\
+The auto\_arima function has multiple built-in optimization method, and calls \textbf{Limited-memory Broyden-Fletcher-Goldfarb-Shanno} (l-bfgs) method in default, which is a practical gradient-based optimization method for large dataset due to its' quick convergence and memory efficiency. However, l-bfgs and other gradient-based search methods have a common problem of requiring a scenario-specific delicate tuning of hyperparameters. This is because both methods rely on line search to determine appropriate step-size in a search direction to sufficiently decrease the objective function. When hyperparameters such as initial stepsize are poorly tuned, it leads to inefficient searches or convergence issues. Furthermore, gradient-based methods typically perform poorly in noisy, non-differentiable data. As it can be seen in figure ~\ref{fig:france_wind}, our data is non-differentiable, and if we view the Resid (measurement of residuals in the data), it is quite noisy as well. \\
 
 As a result, the \textit{Nelder-Mead} (nm) optimization method was chosen for the search. Nelder-Mead optimization method specifically performs well on data which are generally noisy and non-differentiable as it is gradient free. Naturally, it performed significantly better than gradient-based methods in finding the optimal order parameters from our data which has exactly those characteristics. In addition, it proved to be consistent, flexible, and robust in working with data from various energy sources of various countries. Biggest constraint of Nelder-Mead is that it performs poorly on large-scale data. However, as our data has long temporal interval between the adjacent values, we would not need to worry about our dataset being too large. Hence, it was the perfect optimization method for our framework.\\
 
-\item maxiter: This parameter sets the maximum number of iterations for the optimization method to find the convergence. The default maximum number of iteration for optimization method is 50 but our framework allows upto 100 iterations to accommodate for complex functions, which is quite common in our data.
+\begin{figure}[htp!]
+    \centering
+    \includegraphics[width=0.5\linewidth]{figures/France_wind.png}
+    \caption{Seasonal Decomposition of Wind Energy Production in France}
+    \label{fig:france_wind} % Tag for referencing
+\end{figure}
+
+\item maxiter: This parameter sets the maximum number of iterations for the optimization method to find the convergence. The default maximum number of iteration for optimization method is 50 but our framework allows upto 100 iterations to accommodate for complex functions, which is quite common in our data. \\
 
 \item start and max (p, d, q): By setting the range for order parameters the framework avoids doing an exhaustive search or missing the optimal parameter values due to lacking range for exploration. In this case, $p$ and $q$ are set between 0 and 5, while setting the differential order between 0 and 2. \\
 
 \item information\_criterion: Information Criterion refers to statistical measures used for model selection, and it is crucial in selecting optimal order parameters for the model. Conventionally, there are 2 commonly used information criterions which are Akaike (AIC) and Bayesian (BIC). As it can be seen in figure ~\ref{fig:autoarimaconfig}, the AIC is chosen.\\
 
+\newpage
 \begin{equation}
     AIC = 2k - 2ln(L) 
 \end{equation}
@@ -164,20 +183,117 @@ When searching for the order parameter, auto\_arima function calculates the AIC 
  \item m: Indicates the length of a cycle/season of the data, and only needs to be given if the model has a seasonal component.\\
 \end{itemize}
 
-\subsubsection{Configuration of DL model}
-
 
 \subsection{Train-Test Split}
 To train and measure the performance of the forecasting model, we split our data into two parts, training set and test set. We train the model using initial 60\% of our data, and assign the remaining 40\% as test data set to compare it with the forecast. \\
 
-\subsection{Rolling Horizon Approach}
-The forecast relies on historical values for estimation, which limits the model's ability to capture incoming trends, resulting in decrease of accuracy as the forecast window increases. To avoid this issue, forecasts are made at quarterly intervals. This approach is particularly necessary because the ARIMA model cannot incorporate new forecast errors into its formula, creating a need for iterative recalculation when the training set is updated. Therefore, we adopt the rolling horizon approach, where after each forecast, the training dataset is expanded by one month, and the model is re-trained before forecasting the future values of subsequent three months. By implementing the rolling horizon approach, the model becomes capable of incorporating real-time updates, mimics continuous learning, and avoids forecasting biases. \\
 
 \subsection{Implementation of Predictive Statistical Models}
 
 For training of the model, Python's functions from ${statsmodels}$ library are used. The calculated order and seasonal order are passed to the trainer functions along with the train data set. Each model has respective trainer function provided from the ${statsmodels}$ library ($ARIMA()$, $SARIMAX()$) and are configured accordingly with required training data, order of auto-regression, differencing, and moving-average. Finally, the model is fitted to the passed training data. 
-The trained model is used to make a forecast using the model class's ${Predict()}$ function from the starting month to the ending month, in our case considering an interval of 3 months. \\
+The trained model is used to make a forecast using the model class's ${Predict()}$ function from the starting to ending month.\\
 
+\begin{figure}[htp!]
+    \centering
+    \begin{minipage}[t][0.3\textheight][t]{0.3\textwidth}
+    \begin{lstlisting}[language=Python, caption={ARIMA}]
+    model = ARIMA(
+        series, 
+        order=order
+    )
+        
+    results = model.fit()
+
+
+    predictions = results.predict(
+        start=start, 
+        end=end, 
+        typ="levels"
+    )
+    \end{lstlisting}
+    \end{minipage}%
+    \hspace{0.03\textwidth}%
+    \begin{minipage}[t][0.3\textheight][t]{0.3\textwidth}
+    \begin{lstlisting}[language=Python, caption={SARIMA}]
+    model = SARIMAX(
+        train,
+        order=order,
+        seasonal_order=seasonal_order,
+    )
+    results = model.fit()
+
+    predictions = results.predict(
+        start, 
+        end, 
+        typ="levels"
+    )
+    \end{lstlisting}
+    \end{minipage}%
+    \hspace{0.03\textwidth}%
+    \begin{minipage}[t][0.3\textheight][t]{0.3\textwidth}
+    \begin{lstlisting}[language=Python, caption={SARIMAX}]
+    model = SARIMAX(
+        train,
+        order=order,
+        exog=exo_train,
+        seasonal_order=seasonal_order,)
+    results = model.fit()
+    predictions = results.predict(
+        start, 
+        end, 
+        exog=exo_test, 
+        typ="levels"
+    )
+    \end{lstlisting}
+    \end{minipage}
+    \caption{Implementation of predictive model}
+    \label{fig:autoarimaconfig}
+\end{figure}
+
+\subsection{Rolling Horizon Approach}
+The forecast relies on historical values for estimation, which limits the model's ability to capture incoming trends, resulting in decrease of accuracy as the forecast window increases. To avoid this issue, forecasts are made at quarterly intervals. This approach is particularly necessary because the ARIMA model cannot incorporate new forecast errors into its formula, creating a need for iterative recalculation when the training set is updated. Therefore, we adopt the rolling horizon approach, where after each forecast, the training dataset is expanded by one month, and the model is re-trained before forecasting the future values of subsequent three months. By implementing the rolling horizon approach, the model becomes capable of incorporating real-time updates, mimics continuous learning, and avoids forecasting biases. The figure ~\ref{fig:rha} is a graphical display of how the rolling horizon approach works. \\
+
+\begin{figure}[htp!]
+    \centering
+    \includegraphics[width=0.5\linewidth]{figures/rha.png}
+    \caption{Rolling Horizon Approach}
+    \label{fig:rha} % Tag for referencing
+\end{figure}
+
+\subsection{ Analysis}
+
+The performance of forecasting method is measured in terms of the relative error between predicted and actual values using Root-Mean-Squared-Percentage-Error (RMSPE)\cite{botchkarev_performance_2019}. Lower values in RMSPE indicate better performance. RMSPE measures the average percentage deviation between predicted and actual values, providing a standardized measure of prediction accuracy that is independent of the scale of the data. The data used for forecasting is not normalized and individual energy components have radically different scale. Hence, the RMSPE value provides better insight in evaluating forecasting models. RMSPE is defined as \\
+
+\begin{equation}
+\text{RMSPE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} \left( \frac{(Y_i - \hat{Y}_i)}{Y_i} \right)^2} \times 100
+\end{equation}
+
+\subsection{Data}
+
+The dataset consists of monthly energy components contributing to the energy balance on the supply and demand side. The data are published by the national authorities of European countries (usually the transmission system operators or the national statistical offices) and are collected on the level of the high-voltage transmission grid. We use the time series on two different sampling frequency, one is the monthly value, while the other has the hourly resolution. The focus of this study is put on the key energy components or the components with the high level of variability, particularly electricity demand, and renewable energy generation such as wind, PV or hydro generation.  Electricity demand  is crucial for understanding how much power the system needs to meet consumer needs. Demand can vary significantly based on seasonal factors (heating/cooling), economic activity, and population growth. The increasing penetration of renewables significantly impacts supply dynamics. Understanding the variability of wind and solar generation, as well as the dispatchability (controllable generation) of hydro, is critical for managing grid integration challenges and optimizing renewable energy utilization. Data from the January of 2016 onwards is chosen as this period coincides with a significant ramp-up of renewable energy deployment across Europe. \\
+
+\subsection{Infrastructure of the Framework}
+
+As it can be seen in figure ~\ref{fig:framework}, the framework largely is capable of carrying out 2 tasks. One of them is forecasting a set of energy sources from a set of countries with designated models, and the other is producing a comprehensible visualization of a country's data or analysis of the forecasted data. \\ 
+
+\begin{figure}[htp!]
+    \centering
+    \includegraphics[width=0.5\linewidth]{figures/flowchart.png}
+    \caption{Framework Flowchart}
+    \label{fig:framework} % Tag for referencing
+\end{figure}
+
+\begin{itemize}
+ \item Forecasting: When the user of the framework decides to forecast, they have to designate models to use, countries to look into, and energy sources they want to forecast. Then the collected data is passed to the function responsible for forecasting with rolling horizon approach, and the output data is saved as a CSV. Finally, the framework is terminated.\\
+ \item Visualization: There are 2 options for visualization. The framework visualizes:
+ \begin{itemize}
+  \item specific energy data of a specific country along with the decomposition which indicates the trend, seasonality, and residual of the data.
+  \item analysis of energy data forecast. The framework analyzes the forecasted data against the test data, and produces the analysis in terms of visual narratives to aid the viewer's understanding of all model's performance individually.\\
+ \end{itemize}
+
+ \end{itemize}
+ 
+\section{Results \& Discussions}
 
 \newpage
 

@@ -177,7 +177,7 @@ def visual_narrative(c, e):
     # visualize_model_performance(c, e)
 
 
-# visual_narrative("Hungary", "demand")
+# visual_narrative("France", "wind")
 
 
 def iterative_forecast_visualization(energy, country, models):
