@@ -21,3 +21,4 @@ preds = "Predictions"
 col_names_pred = [DATE, preds]
 vdata_dir = "../vdata/"
 rebasement = "rebasement"
+optimizers = ["bfgs", "nm"]

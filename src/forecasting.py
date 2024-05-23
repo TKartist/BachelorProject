@@ -26,32 +26,35 @@ def arima_prediction(series, test_size):
     bound = len(series) - test_size
     train = series[:bound]
     test = series[bound:]
-    arima = auto_arima(
-        train,
-        test="adf",
-        start_p=0,
-        start_q=0,
-        max_p=5,
-        max_q=5,
-        max_d=5,
-        seasonal=False,
-        trace=False,
-        error_action="ignore",
-        suppress_warnings=True,
-        method="nm",
-        maxiter=100,
-    )
+    for mod in var.optimizers:
+        stepwise = auto_arima(
+            train,
+            test="adf",
+            start_p=0,
+            start_q=0,
+            max_p=5,
+            max_q=5,
+            max_d=5,
+            seasonal=False,
+            trace=False,
+            error_action="ignore",
+            suppress_warnings=True,
+            method=mod,
+            maxiter=100,
+        )
 
-    start = len(train)
-    end = len(train) + len(test) - 1
+        start = len(train)
+        end = len(train) + len(test) - 1
 
-    model = ARIMA(series, order=arima.order)
-    results = model.fit()
+        model = ARIMA(series, order=stepwise.order)
+        results = model.fit()
 
+        if results.mle_retvals["converged"]:
+            break
     predictions = results.predict(start=start, end=end, typ="levels").rename(
-        arima.order
+        stepwise.order
     )
-    return (test, predictions, arima.order)
+    return (test, predictions, stepwise.order)
 
 
 # Seasonal AutoRegressive Integrated Moving Average Model
@@ -59,40 +62,45 @@ def sarima_prediction(series, test_size):
     bound = len(series) - test_size
     train = series[:bound]
     test = series[bound:]
-    stepwise = auto_arima(
-        series,
-        m=12,
-        seasonal=True,
-        test="adf",
-        start_p=0,
-        start_q=0,
-        max_p=5,
-        max_q=5,
-        max_d=5,
-        start_P=0,
-        start_Q=0,
-        start_D=0,
-        max_P=5,
-        max_Q=2,
-        max_D=5,
-        trace=False,
-        error_action="ignore",
-        suppress_warnings=True,
-        method="nm",
-        maxiter=100,
-    )
-    order, seasonal_order = stepwise.order, stepwise.seasonal_order
+    for mod in var.optimizers:
+        stepwise = auto_arima(
+            train,
+            m=12,
+            seasonal=True,
+            test="adf",
+            start_p=0,
+            start_q=0,
+            max_p=5,
+            max_q=5,
+            max_d=5,
+            start_P=0,
+            start_Q=0,
+            start_D=0,
+            max_P=5,
+            max_Q=2,
+            max_D=5,
+            trace=False,
+            error_action="ignore",
+            suppress_warnings=True,
+            method=mod,
+            maxiter=100,
+        )
 
-    start = len(train)
-    end = len(train) + len(test) - 1
-    model = SARIMAX(
-        train,
-        order=order,
-        seasonal_order=seasonal_order,
-        enforce_stationarity=False,
-        enforce_invertibility=False,
-    )
-    results = model.fit()
+        order, seasonal_order = stepwise.order, stepwise.seasonal_order
+
+        start = len(train)
+        end = len(train) + len(test) - 1
+        model = SARIMAX(
+            train,
+            order=order,
+            seasonal_order=seasonal_order,
+            enforce_stationarity=False,
+            enforce_invertibility=False,
+        )
+        results = model.fit()
+
+        if results.mle_retvals["converged"]:
+            break
     title = str(order) + "X" + str(seasonal_order)
     predictions = results.predict(start, end, typ="levels").rename(title)
     return (test, predictions, title)
@@ -104,42 +112,45 @@ def sarimax_prediction(series, test_size, exogenous):
     test = series[bound:]
     exo_train = exogenous[:bound]
     exo_test = exogenous[bound:]
-    stepwise = auto_arima(
-        series,
-        exogenous=exo_train,
-        m=12,
-        seasonal=True,
-        test="adf",
-        start_p=0,
-        start_q=0,
-        max_p=5,
-        max_q=5,
-        max_d=5,
-        start_P=0,
-        start_Q=0,
-        start_D=0,
-        max_P=5,
-        max_Q=2,
-        max_D=5,
-        trace=False,
-        error_action="ignore",
-        suppress_warnings=True,
-        method="nm",
-        maxiter=100,
-    )
-    order, seasonal_order = stepwise.order, stepwise.seasonal_order
+    for mod in var.optimizers:
+        stepwise = auto_arima(
+            train,
+            exogenous=exo_train,
+            m=12,
+            seasonal=True,
+            test="adf",
+            start_p=0,
+            start_q=0,
+            max_p=5,
+            max_q=5,
+            max_d=5,
+            start_P=0,
+            start_Q=0,
+            start_D=0,
+            max_P=5,
+            max_Q=2,
+            max_D=5,
+            trace=False,
+            error_action="ignore",
+            suppress_warnings=True,
+            method=mod,
+            maxiter=100,
+        )
+        order, seasonal_order = stepwise.order, stepwise.seasonal_order
 
-    start = len(train)
-    end = len(train) + len(test) - 1
-    model = SARIMAX(
-        train,
-        order=order,
-        exog=exo_train,
-        seasonal_order=seasonal_order,
-        enforce_stationarity=False,
-        enforce_invertibility=False,
-    )
-    results = model.fit()
+        start = len(train)
+        end = len(train) + len(test) - 1
+        model = SARIMAX(
+            train,
+            order=order,
+            exog=exo_train,
+            seasonal_order=seasonal_order,
+            enforce_stationarity=False,
+            enforce_invertibility=False,
+        )
+        results = model.fit()
+        if results.mle_retvals["converged"]:
+            break
     title = str(order) + "X" + str(seasonal_order)
     predictions = results.predict(start, end, exog=exo_test, typ="levels")
     return (test, predictions, title)
@@ -184,6 +195,7 @@ def progressive_prediction(df, energy, country, pred_algo):
     start = int(len(target) - numberOfPredictions)
     pred_col = {}
     out = pd.DataFrame(columns=[var.DATE, var.MAPE, var.RMSPE, var.MEAN, var.order])
+    terminated = False
     for i in range(start + 1, len(target) + 1):
         if pred_algo == var.SARIMA:
             (test, pred, order) = sarima_prediction(target[:i], predictionCount)
@@ -244,7 +256,7 @@ def generate_csv_all(
 def generate_csv_area_chart(
     sarima_dict, arima_dict, dl_dict, sarimax_dict, country, energy
 ):
-    df = pd.DataFrame(columns=[var.DATE, var.ARIMA, var.SARIMA, var.DLP])
+    df = pd.DataFrame(columns=[var.DATE, var.ARIMA, var.SARIMA, var.DL])
     for key in arima_dict:
         new_row = {
             var.DATE: key,
