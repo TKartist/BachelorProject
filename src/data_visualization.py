@@ -56,7 +56,7 @@ def visualize_model_performance(country, energy, models):
         var.result_dir + "prediction_" + country + "_" + energy + "_all.csv",
         index_col=var.DATE,
     )
-    # series.boxplot(column=[var.SARIMA, var.ARIMA, var.DL, var.SARIMAX])
+    series.boxplot(column=models)
     series.boxplot(column=models)
     plt.xlabel("model")
     plt.ylabel(var.RMSPE)
@@ -174,16 +174,16 @@ def visual_narrative(c, e):
     df = organize_table(c)[e]
     view_trend_seasonality(df)
     visualize_pred_margin(c, e)
-    # visualize_model_performance(c, e)
+    visualize_model_performance(c, e, var.models)
 
 
-# visual_narrative("France", "wind")
+# visual_narrative("Germany", "demand")
 
 
 def iterative_forecast_visualization(energy, country, models):
     data = organize_table(country)[energy]
     exogenous = organize_rebasement(country, energy, max(data.index))
-    path = "../demand_forecasts/"
+    path = "../vdata/"
     df = pd.read_csv(
         path + "graph_" + country + "_" + energy + ".csv",
         index_col="date",
@@ -213,19 +213,12 @@ def iterative_forecast_visualization(energy, country, models):
         # df["median"].rename("sarimax model forecast").plot(legend=True)
         plt.legend()
         plt.title(model + " model forecast of " + energy + " in " + country)
-        plt.gcf().set_size_inches(10, 6)
-        plt.savefig(
-            path + model + " model forecast of " + energy + " in " + country + ".png"
-        )
         plt.show()
         plt.title(model + " M+alpha RMSPE of " + energy + " in " + country)
         plt.bar(
             ["M+1 RMSPE", "M+2 RMSPE", "M+3 RMSPE"],
             rmspes,
             width=0.3,
-        )
-        plt.savefig(
-            path + model + " M+alpha RMSPE of " + energy + " in " + country + ".png"
         )
         plt.show()
     title = ""
@@ -241,9 +234,10 @@ def iterative_forecast_visualization(energy, country, models):
     series.boxplot(column=models)
     plt.xlabel("model")
     plt.ylabel(var.RMSPE)
-    plt.savefig(path + title + ".png")
     plt.show()
 
 
-# iterative_forecast_visualization("demand", "Netherlands", ["SARIMAX", "SARIMA", "DL"])
+iterative_forecast_visualization(
+    "demand", "Germany", ["ARIMA", "SARIMAX", "SARIMA", "DL"]
+)
 # visualize_pred_margin("Hungary", "demand")

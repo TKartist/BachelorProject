@@ -48,25 +48,23 @@ def organize_table(country):
             temp_df = temp_df.drop(temp_df[temp_df["provider"] == "ADMIE"].index)
         temp_df = temp_df.set_index(DATE)
         new_df[energy] = temp_df["value"]
+        new_df[energy] = new_df[energy].fillna(0)
     new_df.fillna(0, inplace=True)
     return new_df
 
 
 def organize_rebasement(country, energy, date):
     df = read_country(country)
-    temp_df = df[df["item"] == energy].fillna(0)
+    temp_df = df[df["item"] == energy].dropna()
     new_df = pd.DataFrame()
     new_df[DATE] = temp_df[DATE].unique()
     new_df = new_df.set_index(DATE)
     temp_df = temp_df.set_index(DATE)
     new_df[rebasement] = temp_df["value"] / temp_df[rebasement]
+    new_df = new_df.dropna()
     return new_df[new_df.index <= date]
 
 
-# x = organize_table("Poland")["wind"]
-# z = organize_rebasement("Poland", "wind", max(x.index))
-# pd.set_option("display.max_rows", None)  # Show all rows
-# pd.set_option("display.max_columns", None)  # Show all columns
-# pd.set_option("display.max_colwidth", None)  # Show full column width if truncated
-# print(z)
-# print(x)
+pd.set_option("display.max_rows", None)  # Show all rows
+pd.set_option("display.max_columns", None)  # Show all columns
+pd.set_option("display.max_colwidth", None)

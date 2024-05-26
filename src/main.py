@@ -68,14 +68,14 @@ def predict_all(countries):
     for country in countries:
         df = organize_table(country)
         for col in df.columns:
+            (result_sarimax, pred_sarx) = progressive_prediction(
+                df, col, country, var.SARIMAX
+            )
             (result_sarima, pred_sar) = progressive_prediction(
                 df, col, None, var.SARIMA
             )
             (result_arima, pred_ar) = progressive_prediction(df, col, None, var.ARIMA)
             (result_dl, pred_dl) = progressive_prediction(df, col, None, var.DL)
-            (result_sarimax, pred_sarx) = progressive_prediction(
-                df, col, country, var.SARIMAX
-            )
             generate_csv_all(
                 result_sarima, result_arima, result_dl, result_sarimax, country, col
             )

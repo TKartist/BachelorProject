@@ -50,6 +50,7 @@ def arima_prediction(series, test_size):
         results = model.fit()
 
         if results.mle_retvals["converged"]:
+            print("goddammmmm3")
             break
     predictions = results.predict(start=start, end=end, typ="levels").rename(
         stepwise.order
@@ -100,6 +101,7 @@ def sarima_prediction(series, test_size):
         results = model.fit()
 
         if results.mle_retvals["converged"]:
+            print("goddammmmm2")
             break
     title = str(order) + "X" + str(seasonal_order)
     predictions = results.predict(start, end, typ="levels").rename(title)
@@ -142,8 +144,8 @@ def sarimax_prediction(series, test_size, exogenous):
         end = len(train) + len(test) - 1
         model = SARIMAX(
             train,
-            order=order,
             exog=exo_train,
+            order=order,
             seasonal_order=seasonal_order,
             enforce_stationarity=False,
             enforce_invertibility=False,
@@ -195,7 +197,6 @@ def progressive_prediction(df, energy, country, pred_algo):
     start = int(len(target) - numberOfPredictions)
     pred_col = {}
     out = pd.DataFrame(columns=[var.DATE, var.MAPE, var.RMSPE, var.MEAN, var.order])
-    terminated = False
     for i in range(start + 1, len(target) + 1):
         if pred_algo == var.SARIMA:
             (test, pred, order) = sarima_prediction(target[:i], predictionCount)
@@ -210,6 +211,8 @@ def progressive_prediction(df, energy, country, pred_algo):
             pred = dl_out["Predictions"]
             test = dl_out[energy]
             order = None
+        if pred_algo == "SARIMAX":
+            print(test, pred)
         performance = performance_analysis(test, pred)
         performance[var.order] = order
         out = out.append(performance, ignore_index=True)
@@ -219,7 +222,6 @@ def progressive_prediction(df, energy, country, pred_algo):
                 pred_col[initial_index].append(pred[ind])
             else:
                 pred_col[initial_index] = [pred[ind]]
-        print(pred_col)
     out = out.set_index(var.DATE)
     return (out, pred_col)
 
