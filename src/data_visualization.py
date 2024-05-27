@@ -71,9 +71,7 @@ def visualize_model_performance_all():
         df1.drop(df1[df1[var.MEAN] == 0].index, inplace=True)
         df = pd.concat([df, df1])
     df.drop([var.DATE], axis=1, inplace=True)
-    df[var.ARIMA] = df[var.ARIMA] / df[var.MEAN] * 100
-    df[var.SARIMA] = df[var.SARIMA] / df[var.MEAN] * 100
-    df.boxplot(column=[var.ARIMA, var.SARIMA])
+    df.boxplot(column=[var.ARIMA, var.SARIMA, var.DL, var.SARIMAX])
     plt.title("RMSPE")
     plt.xlabel("model")
     plt.ylabel("data")
@@ -237,7 +235,8 @@ def iterative_forecast_visualization(energy, country, models):
     plt.show()
 
 
-iterative_forecast_visualization(
-    "demand", "Germany", ["ARIMA", "SARIMAX", "SARIMA", "DL"]
-)
+# iterative_forecast_visualization(
+# "demand", "France", ["ARIMA", "SARIMAX", "SARIMA", "DL"]
+# )
 # visualize_pred_margin("Hungary", "demand")
+visualize_model_performance_all()
