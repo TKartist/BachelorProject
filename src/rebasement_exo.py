@@ -3,7 +3,18 @@ import numpy as np
 import variables as var
 import ast
 from forecasting import progressive_prediction
-from data_reader import organize_table
+from data_reader import organize_table, organize_rebasement
+from data_visualization import visualize_country
+import matplotlib.pyplot as plt
+
+df = organize_table("Germany")
+# df2 = organize_rebasement("Switzerland", "ror", max(df.index))
+# print(df2)
+
+# visualize_country(df, 0, "Switzerland")
+# df2.plot()
+visualize_country(df, 4, "Germany")
+plt.show()
 
 # df = pd.read_csv(
 #     "../demand_forecasts/graph_Hungary_demand.csv", index_col="date", parse_dates=True
@@ -30,6 +41,6 @@ from data_reader import organize_table
 
 # df1 = pd.DataFrame(new_dict)
 # print(df1)
-x = organize_table("Austria")
-z = progressive_prediction(x, "solar", "Austria", "SARIMAX")
-print(z)
+# x = organize_table("Austria")
+# z = progressive_prediction(x, "solar", "Austria", "SARIMAX")
+# print(z)

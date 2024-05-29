@@ -175,7 +175,7 @@ def visual_narrative(c, e):
     visualize_model_performance(c, e, var.models)
 
 
-# visual_narrative("Germany", "demand")
+visual_narrative("Germany", "Solar")
 
 
 def iterative_forecast_visualization(energy, country, models):
@@ -236,7 +236,7 @@ def iterative_forecast_visualization(energy, country, models):
 
 
 # iterative_forecast_visualization(
-# "demand", "France", ["ARIMA", "SARIMAX", "SARIMA", "DL"]
+#     "hydro_nops", "France", ["ARIMA", "SARIMAX", "SARIMA", "DL"]
 # )
 # visualize_pred_margin("Hungary", "demand")
-visualize_model_performance_all()
+# visualize_model_performance_all()
