@@ -7,6 +7,7 @@ from data_reader import organize_table, organize_rebasement
 from statsmodels.tsa.seasonal import seasonal_decompose
 import ast
 from auxiliary import rmspe_calculation
+import seaborn as sns
 
 
 def view_trend_seasonality(series):
@@ -175,7 +176,27 @@ def visual_narrative(c, e):
     visualize_model_performance(c, e, var.models)
 
 
-visual_narrative("Germany", "Solar")
+def visualize_heat_map(c):
+    data = organize_table(c)
+    energies = data.columns
+    folder_path = "../results/"
+    country_model_mean = {}
+    for e in energies:
+        df = pd.read_csv(folder_path + "prediction_" + c + "_" + e + "_all.csv")
+        country_model_mean[e] = {
+            var.ARIMA: df[var.ARIMA].mean(),
+            var.SARIMA: df[var.SARIMA].mean(),
+            var.DL: df[var.DL].mean(),
+            var.SARIMAX: df[var.SARIMAX].mean(),
+        }
+    results = pd.DataFrame(country_model_mean)
+    print(results)
+    sns.heatmap(results, cmap="viridis", annot=True)
+    plt.title("Heatmap from Dictionary of Dictionaries")
+    plt.show()
+
+
+visualize_heat_map("France")
 
 
 def iterative_forecast_visualization(energy, country, models):
@@ -236,7 +257,7 @@ def iterative_forecast_visualization(energy, country, models):
 
 
 # iterative_forecast_visualization(
-#     "hydro_nops", "France", ["ARIMA", "SARIMAX", "SARIMA", "DL"]
+#     "gen_wind", "Netherlands", ["ARIMA", "SARIMAX", "SARIMA", "DL"]
 # )
 # visualize_pred_margin("Hungary", "demand")
 # visualize_model_performance_all()

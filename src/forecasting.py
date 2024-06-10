@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import keras
 
 from pmdarima import auto_arima
 from statsmodels.tsa.statespace.sarimax import SARIMAX
@@ -14,6 +15,7 @@ from sklearn.preprocessing import MinMaxScaler
 from keras_preprocessing.sequence import TimeseriesGenerator
 from keras.src.models import Sequential
 from keras.src.layers import Dense, LSTM
+from keras.src.callbacks import EarlyStopping
 
 warnings.filterwarnings(
     "ignore", category=UserWarning, message="Non-invertible|Non-stationary"
@@ -22,7 +24,6 @@ warnings.filterwarnings(
 
 def arima_prediction(series, test_size):
     # train and test set split (assuming we try to predic half a year)
-
     bound = len(series) - test_size
     train = series[:bound]
     test = series[bound:]
@@ -155,7 +156,19 @@ def sarimax_prediction(series, test_size, exogenous):
             break
     title = str(order) + "X" + str(seasonal_order)
     predictions = results.predict(start, end, exog=exo_test, typ="levels")
+    print(predictions)
     return (test, predictions, title)
+
+
+class CustomStopper(keras.callbacks.Callback):
+    def __init__(self, desired_loss):
+        super(CustomStopper, self).__init__()
+        self.desired_loss = desired_loss
+
+    def on_epoch_end(self, epoch, logs={}):
+        if logs.get("loss") <= self.desired_loss:
+            print(f"\nReached desired loss ({self.desired_loss}), stopping training!")
+            self.model.stop_training = True
 
 
 def dl_forecast(series, test_size):
@@ -166,18 +179,25 @@ def dl_forecast(series, test_size):
     scaler = MinMaxScaler()
     scaler.fit(train)
     scaled_train = scaler.transform(train)
-    n_input = 12
+    n_input = 24
     if len(scaled_train) < 24:
         n_input = len(scaled_train)
 
     generator = TimeseriesGenerator(scaled_train, scaled_train, length=n_input)
     model = Sequential()
-    model.add(LSTM(150, activation="relu", input_shape=(n_input, 1)))
+    model.add(
+        LSTM(250, activation="relu", input_shape=(n_input, 1), return_sequences=True)
+    )
+    model.add(LSTM(150, activation="relu", return_sequences=True))
+    model.add(LSTM(50, activation="relu"))
     model.add(Dense(1))
     model.compile(optimizer="adam", loss="MSE")
-
     X, y = generator[0]
-    model.fit(x=X, y=y, epochs=25, batch_size=1)
+    early_stop = EarlyStopping(
+        monitor="val_loss", patience=3, restore_best_weights=True, min_delta=0.005
+    )
+    stopper = CustomStopper(0.004)
+    model.fit(x=X, y=y, epochs=50, batch_size=3, callbacks=[early_stop, stopper])
 
     test_preds = []
     first_eval_batch = scaled_train[-n_input:]
@@ -192,6 +212,7 @@ def dl_forecast(series, test_size):
 
 
 def progressive_prediction(df, energy, country, pred_algo):
+    print(energy)
     target = df[energy].drop(df[df[energy] == 0].index)
     numberOfPredictions = 6
     start = int(len(target) - numberOfPredictions)
@@ -211,8 +232,6 @@ def progressive_prediction(df, energy, country, pred_algo):
             pred = dl_out["Predictions"]
             test = dl_out[energy]
             order = None
-        if pred_algo == "SARIMAX":
-            print(test, pred)
         performance = performance_analysis(test, pred)
         performance[var.order] = order
         out = out.append(performance, ignore_index=True)

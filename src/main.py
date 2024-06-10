@@ -68,6 +68,7 @@ def predict_all(countries):
     for country in countries:
         df = organize_table(country)
         for col in df.columns:
+            print(country + " " + col)
             (result_sarimax, pred_sarx) = progressive_prediction(
                 df, col, country, var.SARIMAX
             )
