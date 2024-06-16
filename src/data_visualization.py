@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import variables as var
 from os import listdir
 from os.path import isfile, join
-from data_reader import organize_table, organize_rebasement
+from data_reader import organize_table, organize_rebasement, organize_volatility
 from statsmodels.tsa.seasonal import seasonal_decompose
 import ast
 from auxiliary import rmspe_calculation
@@ -248,7 +248,7 @@ def distribution_graph_logged():
 
     _, axes = plt.subplots(2, 2, figsize=(16, 10))
 
-    axes[0, 0].hist(data_a, bins=50, edgecolor="black", alpha=0.2)
+    axes[0, 0].hist(data_a, bins=50, edgecolor="black", alpha=0.2, density=True)
     axes[0, 0].axvline(
         data_a[second_quartile],
         color="blue",
@@ -266,7 +266,7 @@ def distribution_graph_logged():
     axes[0, 0].set_title("logged ARIMA forecast accuracy density graph", fontsize=20)
     axes[0, 0].legend()
 
-    axes[0, 1].hist(data_s, bins=50, edgecolor="black", alpha=0.2)
+    axes[0, 1].hist(data_s, bins=50, edgecolor="black", alpha=0.2, density=True)
     axes[0, 1].axvline(
         data_s[second_quartile],
         color="blue",
@@ -284,7 +284,7 @@ def distribution_graph_logged():
     axes[0, 1].set_title("logged SARIMA forecast accuracy density graph", fontsize=20)
     axes[0, 1].legend()
 
-    axes[1, 0].hist(data_sx, bins=50, edgecolor="black", alpha=0.2)
+    axes[1, 0].hist(data_sx, bins=50, edgecolor="black", alpha=0.2, density=True)
     axes[1, 0].axvline(
         data_sx[second_quartile],
         color="blue",
@@ -302,7 +302,7 @@ def distribution_graph_logged():
     axes[1, 0].set_title("logged SARIMAX forecast accuracy density graph", fontsize=20)
     axes[1, 0].legend()
 
-    axes[1, 1].hist(data_d, bins=50, edgecolor="black", alpha=0.2)
+    axes[1, 1].hist(data_d, bins=50, edgecolor="black", alpha=0.2, density=True)
     axes[1, 1].axvline(
         data_d[second_quartile],
         color="blue",
@@ -317,6 +317,11 @@ def distribution_graph_logged():
         linewidth=2,
         label="3rd Quartile",
     )
+    print(data_sx[second_quartile], data_sx[third_quartile])
+    print(data_d[second_quartile], data_d[third_quartile])
+    print(data_a[second_quartile], data_a[third_quartile])
+    print(data_s[second_quartile], data_s[third_quartile])
+
     axes[1, 1].set_title("logged DL forecast accuracy density graph", fontsize=20)
     axes[1, 1].legend()
 
@@ -331,7 +336,18 @@ def distribution_graph_logged():
     plt.show()
 
 
-distribution_graph_logged()
+def visualize_volatility(countries, energies):
+    for i in range(len(countries)):
+        x = organize_volatility(countries[i], energies[i])
+        plt.plot(x["CV"], label=f"volatility {countries[i]} {energies[i]}")
+    plt.title("Coefficient Variance (Volatility) Visualization")
+    plt.legend()
+    plt.show()
+
+
+visualize_volatility(
+    countries=["France", "France", "Netherlands"], energies=["demand", "solar", "hydro"]
+)
 
 
 def iterative_forecast_visualization(energy, country, models):

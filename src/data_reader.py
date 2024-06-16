@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 from variables import DATE, data_dir, rebasement
+import matplotlib.pyplot as plt
 
 
 def clean_filename(filename):
@@ -65,6 +66,11 @@ def organize_rebasement(country, energy, date):
     return new_df[new_df.index <= date]
 
 
-pd.set_option("display.max_rows", None)  # Show all rows
-pd.set_option("display.max_columns", None)  # Show all columns
-pd.set_option("display.max_colwidth", None)
+def organize_volatility(country, energy):
+    data = organize_table(country)
+    df = data[[energy]].copy()
+    window = 3  # Rolling window size in months
+    df["Rolling_Std"] = df[energy].rolling(window).std()
+    df["Rolling_Mean"] = df[energy].rolling(window).mean()
+    df["CV"] = df["Rolling_Std"] / df["Rolling_Mean"]
+    return df
