@@ -35,6 +35,10 @@ def visualize_country(df, col_index, country_name):
     plt.show()
 
 
+# df = organize_table("Belgium")
+# visualize_country(df, 0, "Belgium")
+
+
 def visualize_error(series, type, country, energy):
     series[[type, var.MEAN]].plot.bar(legend=True, figsize=(12, 8))
     plt.xlabel(var.DATE)
@@ -176,6 +180,9 @@ def visual_narrative(c, e):
     visualize_model_performance(c, e, var.models)
 
 
+visual_narrative("Croatia", "wind")
+
+
 def visualize_heat_map(c):
     data = organize_table(c)
     energies = data.columns
@@ -196,7 +203,7 @@ def visualize_heat_map(c):
     plt.show()
 
 
-visualize_heat_map("France")
+# visualize_heat_map("France")
 
 
 def iterative_forecast_visualization(energy, country, models):

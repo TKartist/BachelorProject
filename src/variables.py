@@ -15,7 +15,9 @@ data_dir = "../data/"
 predictionCount = 3
 DLM = "DL_MAPE"
 FORECAST = "Forecast"
-M2 = ["Germany", "Netherlands", "Switzerland", "Spain", "Belgium"]  # Major 2
+M2 = [
+    "Slovakia",
+]  # Major 2
 DL = "DL"
 preds = "Predictions"
 col_names_pred = [DATE, preds]

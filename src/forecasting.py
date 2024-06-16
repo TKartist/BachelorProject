@@ -188,16 +188,15 @@ def dl_forecast(series, test_size):
     model.add(
         LSTM(250, activation="relu", input_shape=(n_input, 1), return_sequences=True)
     )
-    model.add(LSTM(150, activation="relu", return_sequences=True))
-    model.add(LSTM(50, activation="relu"))
+    model.add(LSTM(150, activation="relu"))
     model.add(Dense(1))
     model.compile(optimizer="adam", loss="MSE")
     X, y = generator[0]
     early_stop = EarlyStopping(
-        monitor="val_loss", patience=3, restore_best_weights=True, min_delta=0.005
+        monitor="val_loss", patience=3, restore_best_weights=True, min_delta=0.01
     )
-    stopper = CustomStopper(0.004)
-    model.fit(x=X, y=y, epochs=50, batch_size=3, callbacks=[early_stop, stopper])
+    stopper = CustomStopper(0.005)
+    model.fit(x=X, y=y, epochs=50, batch_size=1, callbacks=[early_stop, stopper])
 
     test_preds = []
     first_eval_batch = scaled_train[-n_input:]
@@ -212,7 +211,6 @@ def dl_forecast(series, test_size):
 
 
 def progressive_prediction(df, energy, country, pred_algo):
-    print(energy)
     target = df[energy].drop(df[df[energy] == 0].index)
     numberOfPredictions = 6
     start = int(len(target) - numberOfPredictions)
