@@ -31,15 +31,15 @@ def rmspe_calculation(data, predictions):
     return rmspe
 
 
-index = range(8, 12)
-predicted_data = [i + 0.1 for i in index]
-actual_data = list(index)
+# index = range(8, 12)
+# predicted_data = [i + 0.1 for i in index]
+# actual_data = list(index)
 
-# Create the DataFrame
-df = pd.DataFrame({"Index": index, "Predicted": predicted_data, "Actual": actual_data})
+# # Create the DataFrame
+# df = pd.DataFrame({"Index": index, "Predicted": predicted_data, "Actual": actual_data})
 
-# Set the 'Index' column as the DataFrame index
-df.set_index("Index", inplace=True)
+# # Set the 'Index' column as the DataFrame index
+# df.set_index("Index", inplace=True)
 
 
 def performance_analysis(data, predictions):
@@ -54,7 +54,7 @@ def performance_analysis(data, predictions):
     }
 
 
-print(performance_analysis(df["Predicted"], df["Actual"]))
+# print(performance_analysis(df["Predicted"], df["Actual"]))
 
 
 # there are obscure cases of auto_arima where the minimum AIC is present after an inverted bell curve

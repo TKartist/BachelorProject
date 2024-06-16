@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import variables as var
 from os import listdir
@@ -8,6 +9,8 @@ from statsmodels.tsa.seasonal import seasonal_decompose
 import ast
 from auxiliary import rmspe_calculation
 import seaborn as sns
+import math
+from scipy.stats import gaussian_kde
 
 
 def view_trend_seasonality(series):
@@ -33,10 +36,6 @@ def visualize_country(df, col_index, country_name):
             marker="o",
         )
     plt.show()
-
-
-# df = organize_table("Belgium")
-# visualize_country(df, 0, "Belgium")
 
 
 def visualize_error(series, type, country, energy):
@@ -180,30 +179,159 @@ def visual_narrative(c, e):
     visualize_model_performance(c, e, var.models)
 
 
-visual_narrative("Croatia", "wind")
+def plot_heatmaps(results_list, countries_list, title):
+    _, axs = plt.subplots(2, 3, figsize=(16, 10))
 
-
-def visualize_heat_map(c):
-    data = organize_table(c)
-    energies = data.columns
-    folder_path = "../results/"
-    country_model_mean = {}
-    for e in energies:
-        df = pd.read_csv(folder_path + "prediction_" + c + "_" + e + "_all.csv")
-        country_model_mean[e] = {
-            var.ARIMA: df[var.ARIMA].mean(),
-            var.SARIMA: df[var.SARIMA].mean(),
-            var.DL: df[var.DL].mean(),
-            var.SARIMAX: df[var.SARIMAX].mean(),
-        }
-    results = pd.DataFrame(country_model_mean)
-    print(results)
-    sns.heatmap(results, cmap="viridis", annot=True)
-    plt.title("Heatmap from Dictionary of Dictionaries")
+    for i, (ax, result) in enumerate(zip(axs.flat, results_list)):
+        sns.heatmap(
+            result,
+            cmap="viridis",
+            ax=ax,
+            cbar=False,
+            annot=True,
+            fmt=".1f",
+            annot_kws={"size": 25},
+        )
+        ax.set_title(countries_list[i], fontsize=25)
+        ax.tick_params(axis="both", which="major", labelsize=20)
+    plt.subplots_adjust(
+        top=0.95, bottom=0.05, left=0.03, right=0.98, hspace=0.25, wspace=0.1
+    )
+    plt.savefig(f"../figs/heat_map_{title}.png")
     plt.show()
 
 
-# visualize_heat_map("France")
+def visualize_heat_map():
+    folder_path = "../results/"
+    country_datas = []
+    for c in var.collected_countries:
+        country_model_mean = {}
+        data = organize_table(c)
+        energies = data.columns
+        for e in energies:
+            df = pd.read_csv(folder_path + "prediction_" + c + "_" + e + "_all.csv")
+            country_model_mean[e[:3]] = {
+                var.ARIMA: math.log2(df[var.ARIMA].mean()),
+                var.SARIMA: math.log2(df[var.SARIMA].mean()),
+                var.DL: math.log2(df[var.DL].mean()),
+                var.SARIMAX: math.log2(df[var.SARIMAX].mean()),
+            }
+        results = pd.DataFrame(country_model_mean).transpose()
+        country_datas.append(results)
+    country_results_part1 = country_datas[:6]
+    country_results_part2 = country_datas[6:]
+    countries_part1 = var.collected_countries[:6]
+    countries_part2 = var.collected_countries[6:]
+    plot_heatmaps(country_results_part1, countries_part1, "part1")
+    plot_heatmaps(country_results_part2, countries_part2, "part2")
+
+
+def distribution_graph_logged():
+    data_a, data_s, data_sx, data_d = [], [], [], []
+    folder_path = "../results/"
+    for c in var.collected_countries:
+        d = organize_table(c)
+        energies = d.columns
+        for e in energies:
+            df = pd.read_csv(folder_path + "prediction_" + c + "_" + e + "_all.csv")
+            data_a.append(math.log2(df[var.ARIMA].mean()))
+            data_s.append(math.log2(df[var.SARIMA].mean()))
+            data_sx.append(math.log2(df[var.SARIMAX].mean()))
+            data_d.append(math.log2(df[var.DL].mean()))
+    data_a = np.sort(np.array(data_a))
+    data_s = np.sort(np.array(data_s))
+    data_sx = np.sort(np.array(data_sx))
+    data_d = np.sort(np.array(data_d))
+    x = len(data_a)
+    third_quartile = int(x * 0.75)
+    second_quartile = int(x * 0.5)
+
+    _, axes = plt.subplots(2, 2, figsize=(16, 10))
+
+    axes[0, 0].hist(data_a, bins=50, edgecolor="black", alpha=0.2)
+    axes[0, 0].axvline(
+        data_a[second_quartile],
+        color="blue",
+        linestyle="--",
+        linewidth=2,
+        label="2nd Quartile",
+    )
+    axes[0, 0].axvline(
+        data_a[third_quartile],
+        color="green",
+        linestyle="--",
+        linewidth=2,
+        label="3rd Quartile",
+    )
+    axes[0, 0].set_title("logged ARIMA forecast accuracy density graph", fontsize=20)
+    axes[0, 0].legend()
+
+    axes[0, 1].hist(data_s, bins=50, edgecolor="black", alpha=0.2)
+    axes[0, 1].axvline(
+        data_s[second_quartile],
+        color="blue",
+        linestyle="--",
+        linewidth=2,
+        label="2nd Quartile",
+    )
+    axes[0, 1].axvline(
+        data_s[third_quartile],
+        color="green",
+        linestyle="--",
+        linewidth=2,
+        label="3rd Quartile",
+    )
+    axes[0, 1].set_title("logged SARIMA forecast accuracy density graph", fontsize=20)
+    axes[0, 1].legend()
+
+    axes[1, 0].hist(data_sx, bins=50, edgecolor="black", alpha=0.2)
+    axes[1, 0].axvline(
+        data_sx[second_quartile],
+        color="blue",
+        linestyle="--",
+        linewidth=2,
+        label="2nd Quartile",
+    )
+    axes[1, 0].axvline(
+        data_sx[third_quartile],
+        color="green",
+        linestyle="--",
+        linewidth=2,
+        label="3rd Quartile",
+    )
+    axes[1, 0].set_title("logged SARIMAX forecast accuracy density graph", fontsize=20)
+    axes[1, 0].legend()
+
+    axes[1, 1].hist(data_d, bins=50, edgecolor="black", alpha=0.2)
+    axes[1, 1].axvline(
+        data_d[second_quartile],
+        color="blue",
+        linestyle="--",
+        linewidth=2,
+        label="2nd Quartile",
+    )
+    axes[1, 1].axvline(
+        data_d[third_quartile],
+        color="green",
+        linestyle="--",
+        linewidth=2,
+        label="3rd Quartile",
+    )
+    axes[1, 1].set_title("logged DL forecast accuracy density graph", fontsize=20)
+    axes[1, 1].legend()
+
+    # Adjust tick parameters
+    for ax in axes.flatten():
+        ax.tick_params(axis="both", which="major", labelsize=20)
+
+    plt.subplots_adjust(
+        top=0.95, bottom=0.05, left=0.03, right=0.98, hspace=0.25, wspace=0.1
+    )
+    plt.savefig(f"../figs/forecast_accuracy_density.png")
+    plt.show()
+
+
+distribution_graph_logged()
 
 
 def iterative_forecast_visualization(energy, country, models):

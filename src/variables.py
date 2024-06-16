@@ -25,3 +25,17 @@ vdata_dir = "../vdata/"
 rebasement = "rebasement"
 optimizers = ["nm", "bfgs"]
 models = [ARIMA, SARIMA, DL, SARIMAX]
+collected_countries = [
+    "Belgium",
+    "Croatia",
+    "Czech_Republic",
+    "France",
+    "Germany",
+    "Hungary",
+    "Netherlands",
+    "Poland",
+    "Portugal",
+    "Romania",
+    "Spain",
+    "Switzerland",
+]
