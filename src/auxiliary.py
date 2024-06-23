@@ -6,6 +6,7 @@ from sklearn.metrics import mean_absolute_percentage_error
 import itertools
 from statsmodels.tsa.arima.model import ARIMA
 import variables as var
+from arch import arch_model
 
 warnings.filterwarnings("ignore")
 
@@ -82,3 +83,21 @@ def grid_search(series, order):
         except:
             continue
     return best_model
+
+
+def evaluate_garch_models(residuals, p_values, q_values):
+    best_aic = np.inf
+    best_order = None
+    best_model = None
+
+    for p, q in itertools.product(p_values, q_values):
+        try:
+            model = arch_model(residuals, vol="Garch", p=p, q=q)
+            results = model.fit(disp="off")
+            if results.aic < best_aic:
+                best_aic = results.aic
+                best_order = (p, q)
+                best_model = results
+        except:
+            continue
+    return best_order, best_model

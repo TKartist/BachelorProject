@@ -4,12 +4,13 @@ import keras
 
 from pmdarima import auto_arima
 from statsmodels.tsa.statespace.sarimax import SARIMAX
-from auxiliary import performance_analysis
+from auxiliary import performance_analysis, evaluate_garch_models
 from data_reader import organize_rebasement
 import variables as var
 from variables import predictionCount
 import warnings
 from statsmodels.tsa.arima.model import ARIMA
+from arch import arch_model
 
 from sklearn.preprocessing import MinMaxScaler
 from keras_preprocessing.sequence import TimeseriesGenerator
@@ -20,6 +21,42 @@ from keras.src.callbacks import EarlyStopping
 warnings.filterwarnings(
     "ignore", category=UserWarning, message="Non-invertible|Non-stationary"
 )
+
+
+def arima_garch(series, test_size):
+    bound = len(series) - test_size
+    train = series[:bound]
+    test = series[bound:]
+    print(test)
+    for mod in var.optimizers:
+        stepwise = auto_arima(
+            train,
+            test="adf",
+            start_p=0,
+            start_q=0,
+            max_p=3,
+            max_q=1,
+            max_d=3,
+            seasonal=False,
+            trace=False,
+            error_action="ignore",
+            suppress_warnings=True,
+            stepwise=True,
+            method=mod,
+            maxiter=1000,
+        )
+
+        start = len(train)
+        end = len(train) + len(test) - 1
+
+        model = ARIMA(series, order=stepwise.order)
+        results = model.fit()
+
+        if results.mle_retvals["converged"]:
+            break
+    predictions = results.predict(start=start, end=end).rename(stepwise.order)
+
+    return (test, predictions, stepwise.order)
 
 
 def arima_prediction(series, test_size):
@@ -51,7 +88,6 @@ def arima_prediction(series, test_size):
         results = model.fit()
 
         if results.mle_retvals["converged"]:
-            print("goddammmmm3")
             break
     predictions = results.predict(start=start, end=end, typ="levels").rename(
         stepwise.order

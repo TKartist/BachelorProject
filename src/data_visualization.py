@@ -449,8 +449,8 @@ def iterative_forecast_visualization(energy, country, models):
     plt.show()
 
 
-iterative_forecast_visualization(
-    "solar", "France", ["ARIMA", "SARIMAX", "SARIMA", "DL"]
-)
+# iterative_forecast_visualization(
+#     "solar", "France", ["ARIMA", "SARIMAX", "SARIMA", "DL"]
+# )
 # visualize_pred_margin("Hungary", "demand")
 # visualize_model_performance_all()
