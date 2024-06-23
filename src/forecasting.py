@@ -78,7 +78,7 @@ def sarima_prediction(series, test_size):
             start_P=0,
             start_Q=0,
             start_D=0,
-            max_P=5,
+            max_P=2,
             max_Q=2,
             max_D=5,
             trace=False,
@@ -130,7 +130,7 @@ def sarimax_prediction(series, test_size, exogenous):
             start_P=0,
             start_Q=0,
             start_D=0,
-            max_P=5,
+            max_P=2,
             max_Q=2,
             max_D=5,
             trace=False,
@@ -266,6 +266,7 @@ def generate_csv_all(
     df[var.DLM] = dl_series[var.MAPE]
     df[var.order + "X" + var.ARIMA] = arima_series[var.order]
     df[var.order + "X" + var.SARIMA] = sarima_series[var.order]
+    df[var.order + "X" + var.SARIMAX] = sarimax_series[var.order]
     df.to_csv(
         "../results/prediction_" + country + "_" + energy + "_all.csv",
         encoding="utf-8",

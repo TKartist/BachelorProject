@@ -10,7 +10,7 @@ import ast
 from auxiliary import rmspe_calculation
 import seaborn as sns
 import math
-from scipy.stats import gaussian_kde
+import random
 
 
 def view_trend_seasonality(series):
@@ -342,12 +342,54 @@ def visualize_volatility(countries, energies):
         plt.plot(x["CV"], label=f"volatility {countries[i]} {energies[i]}")
     plt.title("Coefficient Variance (Volatility) Visualization")
     plt.legend()
+    plt.savefig("../figs/volatility_measurement.png")
     plt.show()
 
 
-visualize_volatility(
-    countries=["France", "France", "Netherlands"], energies=["demand", "solar", "hydro"]
-)
+def forecast_duration_effectiveness():
+    rmspes_list = []
+    for country in var.collected_countries:
+        data = organize_table(country)
+        energies = data.columns
+        for energy in energies:
+            path = "../vdata/"
+            df = pd.read_csv(
+                path + "graph_" + country + "_" + energy + ".csv",
+                index_col="date",
+                parse_dates=True,
+            )
+            model_data = data[energy]
+            for model in var.models:
+                df[model] = df[model].apply(lambda x: ast.literal_eval(x))
+                rmspes = []
+                for iter in range(3):
+                    s = df.index[iter]
+                    e = s + pd.DateOffset(months=len(df.index) - 1)
+                    dates = pd.date_range(start=s, end=e, freq="MS")
+                    z = pd.DataFrame(dates, columns=["date"])
+                    y = []
+                    for a in df[model]:
+                        y.append(a[iter])
+                    z["predictions"] = y
+                    z = z.set_index("date")
+                    z["demand"] = model_data[
+                        model_data.index[model_data.index >= min(z.index)]
+                    ]
+                    rmspes.append(rmspe_calculation(z["demand"], z["predictions"]))
+                rmspes_list.append(rmspes)
+    numplots = 12
+    fig, axes = plt.subplots(nrows=3, ncols=4, figsize=(17, 10))
+    axes = axes.flatten()
+    for i in range(numplots):
+        axes[i].bar(
+            ["m + 1", "m + 2", "m + 3"],
+            rmspes_list[random.randint(1, len(rmspes_list) - 1)],
+        )
+    plt.subplots_adjust(
+        top=0.95, bottom=0.05, left=0.03, right=0.98, hspace=0.25, wspace=0.1
+    )
+    plt.savefig("../figs/iteration_rmspe.png")
+    plt.show()
 
 
 def iterative_forecast_visualization(energy, country, models):
@@ -407,8 +449,8 @@ def iterative_forecast_visualization(energy, country, models):
     plt.show()
 
 
-# iterative_forecast_visualization(
-#     "gen_wind", "Netherlands", ["ARIMA", "SARIMAX", "SARIMA", "DL"]
-# )
+iterative_forecast_visualization(
+    "solar", "France", ["ARIMA", "SARIMAX", "SARIMA", "DL"]
+)
 # visualize_pred_margin("Hungary", "demand")
 # visualize_model_performance_all()
